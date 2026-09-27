@@ -1,0 +1,1636 @@
+<!doctype html>
+<html lang="es">
+ <head>
+  <meta charset="UTF-8" />
+  <title>FPS Chess Arena - Toy Story Room & Shop</title>
+  <style>
+   * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+   }
+   body {
+    background: #0b0c10;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    color: #fff;
+   }
+
+   #canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+   }
+
+   .ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(11, 12, 16, 0.94);
+    z-index: 10;
+   }
+   .card {
+    background: #1f2833;
+    border: 2px solid #66fcf1;
+    padding: 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(102, 252, 241, 0.3);
+    min-width: 360px;
+    max-width: 480px;
+   }
+   h1 {
+    margin-bottom: 12px;
+    color: #66fcf1;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+   }
+   p {
+    margin-bottom: 15px;
+    color: #c5c6c7;
+    font-size: 14px;
+   }
+
+   .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+   }
+   button {
+    background: transparent;
+    border: 2px solid #45a29e;
+    color: #fff;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+   }
+   button:hover {
+    background: #66fcf1;
+    color: #0b0c10;
+    border-color: #66fcf1;
+    box-shadow: 0 0 10px #66fcf1;
+   }
+
+   /* Barra Superior con Monedas y Tienda */
+   #top-bar {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    display: flex;
+    gap: 15px;
+    z-index: 15;
+    align-items: center;
+   }
+   .coin-display {
+    background: rgba(31, 40, 51, 0.85);
+    border: 2px solid #f1c40f;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-weight: bold;
+    color: #f1c40f;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+   }
+   .shop-btn {
+    background: #e67e22;
+    border-color: #f39c12;
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+   }
+   .shop-btn:hover {
+    background: #d35400;
+    color: #fff;
+    box-shadow: 0 0 10px #e67e22;
+   }
+
+   #user-badge {
+    display: none;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    align-items: center;
+    gap: 10px;
+    z-index: 15;
+    background: rgba(31, 40, 51, 0.85);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #45a29e;
+   }
+   #user-badge img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #66fcf1;
+   }
+   #user-badge span {
+    font-size: 13px;
+    font-weight: bold;
+    color: #66fcf1;
+   }
+
+   /* Videos Cinemáticos */
+   #cinematic-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 30;
+   }
+   #cinematic-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+   }
+   #skip-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 35;
+    font-size: 12px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.6);
+   }
+
+   /* HUD del Shooter */
+   #fps-hud {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+   }
+   #crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    border: 2px solid #66fcf1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+   }
+   .health-bar-container {
+    position: absolute;
+    bottom: 30px;
+    width: 250px;
+    height: 20px;
+    background: #333;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    overflow: hidden;
+   }
+   #player-hp-bar {
+    left: 40px;
+   }
+   #enemy-hp-bar {
+    right: 40px;
+   }
+   .hp-fill {
+    height: 100%;
+    width: 100%;
+    background: #45a29e;
+    transition: width 0.15s ease;
+   }
+   .hp-label {
+    position: absolute;
+    bottom: 55px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+   }
+   #player-hp-label {
+    left: 40px;
+    color: #66fcf1;
+   }
+   #enemy-hp-label {
+    right: 40px;
+    color: #ff0055;
+   }
+
+   #info-banner {
+    position: absolute;
+    top: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 18px;
+    color: #66fcf1;
+    z-index: 2;
+    text-shadow: 0 0 10px #000;
+   }
+
+   /* Tienda Modal */
+   .shop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+   }
+   .shop-item {
+    background: #0b0c10;
+    border: 1px solid #45a29e;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+   }
+   .shop-item h3 {
+    font-size: 14px;
+    color: #66fcf1;
+    margin-bottom: 5px;
+   }
+   .shop-item p {
+    font-size: 11px;
+    margin-bottom: 8px;
+   }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+ </head>
+ <body>
+  <div id="canvas-container"></div>
+  <div id="info-banner"></div>
+
+  <div id="top-bar">
+   <div class="coin-display">🪙 <span id="coin-count">300</span></div>
+   <button class="shop-btn" onclick="openShopModal()">
+    🛒 Armería & Tienda
+   </button>
+  </div>
+
+  <div id="user-badge">
+   <img id="user-avatar" src="" alt="Avatar" />
+   <span id="user-name">Usuario</span>
+  </div>
+
+  <div id="cinematic-container">
+   <video id="cinematic-video" playsinline muted></video>
+   <button id="skip-btn" onclick="skipCinematic()">Omitir (ESC)</button>
+  </div>
+
+  <!-- Menú Auth -->
+  <div id="auth-menu" class="ui-layer">
+   <div class="card">
+    <h1>Chess Shooter 3D</h1>
+    <p>Inicia sesión con Google o continúa directamente:</p>
+    <div
+     id="google-btn-container"
+     style="display: flex; justify-content: center; margin-bottom: 15px"
+    ></div>
+    <button
+     onclick="handleMenuClick(() => bypassAuth())"
+     style="border-style: dashed; font-size: 12px; color: #aaa"
+    >
+     Jugar como Invitado
+    </button>
+   </div>
+  </div>
+
+  <!-- Menú Dificultad -->
+  <div id="diff-menu" class="ui-layer" style="display: none">
+   <div class="card">
+    <h1>Dificultad de IA</h1>
+    <p>Selecciona el nivel táctico:</p>
+    <div class="btn-group">
+     <button onclick="handleMenuClick(() => selectDifficulty('easy'))">
+      Fácil (800 Elo)
+     </button>
+     <button onclick="handleMenuClick(() => selectDifficulty('normal'))">
+      Normal (1600 Elo)
+     </button>
+     <button onclick="handleMenuClick(() => selectDifficulty('hard'))">
+      Difícil (2000 Elo)
+     </button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Menú Color -->
+  <div id="color-menu" class="ui-layer" style="display: none">
+   <div class="card">
+    <h1>Bando</h1>
+    <p>Elige tu color de fichas:</p>
+    <div class="btn-group">
+     <button onclick="handleMenuClick(() => selectColor('w'))">
+      Blancas (Empiezas tú)
+     </button>
+     <button onclick="handleMenuClick(() => selectColor('b'))">
+      Negras (Empieza la IA)
+     </button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Tienda / Armería Modal -->
+  <div id="shop-modal" class="ui-layer" style="display: none; z-index: 40">
+   <div class="card" style="max-width: 550px">
+    <h1>Armería & Ventajas</h1>
+    <div class="shop-grid">
+     <div class="shop-item">
+      <h3>Pistola Láser</h3>
+      <p>Daño: 25 | Cadencia normal</p>
+      <button id="btn-wpn-laser" onclick="equipWeapon('laser')">
+       Equipada
+      </button>
+     </div>
+     <div class="shop-item">
+      <h3>Escopeta Neón</h3>
+      <p>Daño: 45 | Disparo múltiple</p>
+      <button id="btn-wpn-shotgun" onclick="buyOrEquip('shotgun', 250)">
+       Comprar (250 🪙)
+      </button>
+     </div>
+     <div class="shop-item">
+      <h3>Rifle de Plasma</h3>
+      <p>Daño: 85 | Francotirador</p>
+      <button id="btn-wpn-sniper" onclick="buyOrEquip('sniper', 450)">
+       Comprar (450 🪙)
+      </button>
+     </div>
+     <div class="shop-item">
+      <h3>Botas de Salto/Vel.</h3>
+      <p>Velocidad aumentada +50%</p>
+      <button id="btn-perk-speed" onclick="buyPerk('speed', 200)">
+       Comprar (200 🪙)
+      </button>
+     </div>
+     <div class="shop-item" style="grid-column: span 2">
+      <h3>Rastreador Flecha Neón (Wallhack)</h3>
+      <p>
+       Triángulo luminoso flotante sobre el rival siempre visible tras los
+       obstáculos
+      </p>
+      <button id="btn-perk-tracker" onclick="buyPerk('tracker', 300)">
+       Comprar (300 🪙)
+      </button>
+     </div>
+    </div>
+    <div style="margin-bottom: 12px">
+     <button
+      onclick="addFreeCoins(200)"
+      style="font-size: 11px; border-color: #f1c40f; color: #f1c40f"
+     >
+      + Recargar 200 Monedas (Test)
+     </button>
+    </div>
+    <button onclick="closeShopModal()">Volver al Juego</button>
+   </div>
+  </div>
+
+  <!-- HUD Combate FPS -->
+  <div id="fps-hud">
+   <div id="crosshair"></div>
+   <div id="player-hp-label" class="hp-label">Tu Salud (Atacante)</div>
+   <div id="player-hp-bar" class="health-bar-container">
+    <div id="player-hp" class="hp-fill"></div>
+   </div>
+
+   <div id="enemy-hp-label" class="hp-label">Enemigo</div>
+   <div id="enemy-hp-bar" class="health-bar-container">
+    <div id="enemy-hp" class="hp-fill" style="background: #ff0055"></div>
+   </div>
+  </div>
+
+  <script>
+   // ==========================================
+   // 1. GESTIÓN ECONÓMICA & ARMERÍA
+   // ==========================================
+   let coins = 300
+   let ownedItems = {
+    weapons: ['laser'],
+    perks: [],
+   }
+   let currentWeapon = 'laser' // 'laser', 'shotgun', 'sniper'
+
+   function updateCoinsUI() {
+    document.getElementById('coin-count').innerText = coins
+   }
+
+   function addCoins(amount) {
+    coins += amount
+    updateCoinsUI()
+   }
+
+   function addFreeCoins(amt) {
+    addCoins(amt)
+    playUiSound(650, 'sine', 0.1)
+    updateShopButtons()
+   }
+
+   function openShopModal() {
+    playUiSound(500, 'sine', 0.08)
+    updateShopButtons()
+    document.getElementById('shop-modal').style.display = 'flex'
+   }
+
+   function closeShopModal() {
+    playUiSound(400, 'sine', 0.08)
+    document.getElementById('shop-modal').style.display = 'none'
+   }
+
+   function updateShopButtons() {
+    // Pistola
+    document.getElementById('btn-wpn-laser').innerText =
+     currentWeapon === 'laser' ? 'Equipada' : 'Equipar'
+
+    // Escopeta
+    const btnShotgun = document.getElementById('btn-wpn-shotgun')
+    if (ownedItems.weapons.includes('shotgun')) {
+     btnShotgun.innerText = currentWeapon === 'shotgun' ? 'Equipada' : 'Equipar'
+     btnShotgun.onclick = () => equipWeapon('shotgun')
+    } else {
+     btnShotgun.innerText = 'Comprar (250 🪙)'
+     btnShotgun.onclick = () => buyOrEquip('shotgun', 250)
+    }
+
+    // Sniper
+    const btnSniper = document.getElementById('btn-wpn-sniper')
+    if (ownedItems.weapons.includes('sniper')) {
+     btnSniper.innerText = currentWeapon === 'sniper' ? 'Equipada' : 'Equipar'
+     btnSniper.onclick = () => equipWeapon('sniper')
+    } else {
+     btnSniper.innerText = 'Comprar (450 🪙)'
+     btnSniper.onclick = () => buyOrEquip('sniper', 450)
+    }
+
+    // Perks
+    const btnSpeed = document.getElementById('btn-perk-speed')
+    if (ownedItems.perks.includes('speed')) {
+     btnSpeed.innerText = 'Activo ✔'
+     btnSpeed.disabled = true
+    } else {
+     btnSpeed.innerText = 'Comprar (200 🪙)'
+    }
+
+    const btnTracker = document.getElementById('btn-perk-tracker')
+    if (ownedItems.perks.includes('tracker')) {
+     btnTracker.innerText = 'Activo ✔'
+     btnTracker.disabled = true
+    } else {
+     btnTracker.innerText = 'Comprar (300 🪙)'
+    }
+   }
+
+   function buyOrEquip(weaponKey, price) {
+    if (ownedItems.weapons.includes(weaponKey)) {
+     equipWeapon(weaponKey)
+    } else {
+     if (coins >= price) {
+      coins -= price
+      ownedItems.weapons.push(weaponKey)
+      equipWeapon(weaponKey)
+      updateCoinsUI()
+      playUiSound(800, 'triangle', 0.15)
+     } else {
+      alert(
+       '¡Monedas insuficientes! Gana partidas o recarga para conseguir más.',
+      )
+     }
+    }
+    updateShopButtons()
+   }
+
+   function equipWeapon(weaponKey) {
+    currentWeapon = weaponKey
+    playUiSound(600, 'sine', 0.1)
+    updateShopButtons()
+   }
+
+   function buyPerk(perkKey, price) {
+    if (coins >= price && !ownedItems.perks.includes(perkKey)) {
+     coins -= price
+     ownedItems.perks.push(perkKey)
+     updateCoinsUI()
+     playUiSound(880, 'triangle', 0.2)
+     if (perkKey === 'speed') playerStats.speed = 28
+     if (perkKey === 'tracker' && trackerArrow) trackerArrow.visible = true
+     updateShopButtons()
+    } else if (coins < price) {
+     alert('¡Monedas insuficientes!')
+    }
+   }
+
+   // ==========================================
+   // 2. SISTEMA DE AUDIO (Web Audio API)
+   // ==========================================
+   let audioCtx = null
+   function getAudioContext() {
+    if (!audioCtx)
+     audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+    return audioCtx
+   }
+
+   function playUiSound(freq = 440, type = 'sine', duration = 0.08) {
+    try {
+     const ctx = getAudioContext()
+     const osc = ctx.createOscillator()
+     const gain = ctx.createGain()
+     osc.type = type
+     osc.frequency.setValueAtTime(freq, ctx.currentTime)
+     gain.gain.setValueAtTime(0.12, ctx.currentTime)
+     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration)
+     osc.connect(gain)
+     gain.connect(ctx.destination)
+     osc.start()
+     osc.stop(ctx.currentTime + duration)
+    } catch (e) {}
+   }
+
+   function playWeaponSound(type) {
+    try {
+     const ctx = getAudioContext()
+     if (type === 'laser') {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sawtooth'
+      osc.frequency.setValueAtTime(450, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(80, ctx.currentTime + 0.12)
+      gain.gain.setValueAtTime(0.2, ctx.currentTime)
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.12)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.12)
+     } else if (type === 'shotgun') {
+      // Disparo contundente con ruido
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'square'
+      osc.frequency.setValueAtTime(140, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(20, ctx.currentTime + 0.25)
+      gain.gain.setValueAtTime(0.35, ctx.currentTime)
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.25)
+     } else if (type === 'sniper') {
+      // Pulso penetrante de alta potencia
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(1100, ctx.currentTime)
+      osc.frequency.exponentialRampToValueAtTime(60, ctx.currentTime + 0.35)
+      gain.gain.setValueAtTime(0.4, ctx.currentTime)
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.35)
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.start()
+      osc.stop(ctx.currentTime + 0.35)
+     }
+    } catch (e) {}
+   }
+
+   function handleMenuClick(action) {
+    playUiSound(587.33, 'triangle', 0.1)
+    action()
+   }
+
+   // ==========================================
+   // 3. REPRODUCTOR DE VIDEO
+   // ==========================================
+   const CINEMATIC_VIDEOS = {
+    intro: 'videos/intro.mp4',
+    captureTransition: 'videos/transition.mp4',
+    combatVictory: 'videos/victory.mp4',
+   }
+
+   let onCinematicEndCallback = null
+
+   function playCinematic(videoSrc, onComplete) {
+    const container = document.getElementById('cinematic-container')
+    const video = document.getElementById('cinematic-video')
+    onCinematicEndCallback = onComplete
+
+    video.pause()
+    video.removeAttribute('src')
+    video.load()
+
+    video.src = videoSrc
+    video.muted = true
+    container.style.display = 'block'
+
+    let finished = false
+    const end = () => {
+     if (!finished) {
+      finished = true
+      skipCinematic()
+     }
+    }
+
+    video.onended = end
+    video.onerror = () => end()
+    const promise = video.play()
+    if (promise !== undefined) promise.catch(() => end())
+   }
+
+   function skipCinematic() {
+    const container = document.getElementById('cinematic-container')
+    const video = document.getElementById('cinematic-video')
+    video.pause()
+    container.style.display = 'none'
+
+    if (onCinematicEndCallback) {
+     const cb = onCinematicEndCallback
+     onCinematicEndCallback = null
+     cb()
+    }
+   }
+
+   // ==========================================
+   // 4. GOOGLE AUTH
+   // ==========================================
+   const GOOGLE_CLIENT_ID =
+    '174963239757-tcjjtqdqr32e5la6vm6gje3bvjs3g332.apps.googleusercontent.com'
+
+   function initGoogleAuth() {
+    if (typeof google === 'undefined') {
+     setTimeout(initGoogleAuth, 250)
+     return
+    }
+    google.accounts.id.initialize({
+     client_id: GOOGLE_CLIENT_ID,
+     callback: handleGoogleCredentialResponse,
+    })
+    google.accounts.id.renderButton(
+     document.getElementById('google-btn-container'),
+     { theme: 'filled_blue', size: 'large', shape: 'pill' },
+    )
+   }
+
+   function parseJwt(token) {
+    try {
+     const base64Url = token.split('.')[1]
+     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+     const jsonPayload = decodeURIComponent(
+      atob(base64)
+       .split('')
+       .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+       .join(''),
+     )
+     return JSON.parse(jsonPayload)
+    } catch (e) {
+     return null
+    }
+   }
+
+   function handleGoogleCredentialResponse(response) {
+    const data = parseJwt(response.credential)
+    if (data) {
+     document.getElementById('user-name').innerText =
+      data.given_name || data.name
+     if (data.picture) document.getElementById('user-avatar').src = data.picture
+     document.getElementById('user-badge').style.display = 'flex'
+    }
+    startAfterLogin()
+   }
+
+   function bypassAuth() {
+    document.getElementById('user-name').innerText = 'Invitado'
+    document.getElementById('user-avatar').src =
+     'https://ui-avatars.com/api/?name=Player&background=45a29e&color=fff'
+    document.getElementById('user-badge').style.display = 'flex'
+    startAfterLogin()
+   }
+
+   function startAfterLogin() {
+    document.getElementById('auth-menu').style.display = 'none'
+    playCinematic(CINEMATIC_VIDEOS.intro, () => {
+     document.getElementById('diff-menu').style.display = 'flex'
+    })
+   }
+
+   // ==========================================
+   // 5. MODELADO 3D REALISTA DE PIEZAS
+   // ==========================================
+   function buildPieceMesh(type, color) {
+    const group = new THREE.Group()
+    const mat = new THREE.MeshStandardMaterial({
+     color: color === 'w' ? 0xeaeaea : 0x1a1a1a,
+     metalness: 0.15,
+     roughness: 0.35,
+    })
+
+    const basePoints = [
+     new THREE.Vector2(0, 0),
+     new THREE.Vector2(0.55, 0),
+     new THREE.Vector2(0.52, 0.1),
+     new THREE.Vector2(0.46, 0.16),
+     new THREE.Vector2(0.48, 0.22),
+     new THREE.Vector2(0.4, 0.3),
+     new THREE.Vector2(0.32, 0.45),
+    ]
+    const baseGeom = new THREE.LatheGeometry(basePoints, 24)
+    const baseMesh = new THREE.Mesh(baseGeom, mat)
+    baseMesh.castShadow = true
+    group.add(baseMesh)
+
+    if (type === 'p') {
+     const bodyPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.24, 0.75),
+      new THREE.Vector2(0.18, 0.95),
+      new THREE.Vector2(0.26, 1.0),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(bodyPoints, 20), mat))
+     const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 18, 18), mat)
+     head.position.y = 1.18
+     head.castShadow = true
+     group.add(head)
+    } else if (type === 'r') {
+     const towerPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.28, 1.05),
+      new THREE.Vector2(0.38, 1.12),
+      new THREE.Vector2(0.38, 1.35),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(towerPoints, 20), mat))
+     for (let i = 0; i < 4; i++) {
+      const merlon = new THREE.Mesh(
+       new THREE.BoxGeometry(0.12, 0.16, 0.12),
+       mat,
+      )
+      const angle = (i * Math.PI) / 2
+      merlon.position.set(Math.cos(angle) * 0.3, 1.42, Math.sin(angle) * 0.3)
+      group.add(merlon)
+     }
+    } else if (type === 'n') {
+     const neckPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.28, 0.65),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(neckPoints, 16), mat))
+
+     const knightShape = new THREE.Shape()
+     knightShape.moveTo(0, 0)
+     knightShape.lineTo(0.25, 0)
+     knightShape.quadraticCurveTo(0.38, 0.35, 0.28, 0.65)
+     knightShape.lineTo(0.48, 0.55)
+     knightShape.lineTo(0.46, 0.75)
+     knightShape.lineTo(0.25, 0.95)
+     knightShape.lineTo(0.22, 1.08)
+     knightShape.lineTo(0.12, 0.98)
+     knightShape.quadraticCurveTo(-0.05, 0.65, -0.15, 0)
+     knightShape.closePath()
+
+     const headGeom = new THREE.ExtrudeGeometry(knightShape, {
+      depth: 0.24,
+      bevelEnabled: true,
+      bevelSegments: 3,
+      steps: 1,
+      bevelSize: 0.04,
+      bevelThickness: 0.04,
+     })
+     headGeom.center()
+     const headMesh = new THREE.Mesh(headGeom, mat)
+     headMesh.position.set(0, 1.05, 0)
+     headMesh.scale.set(0.9, 0.9, 0.9)
+     headMesh.castShadow = true
+     group.add(headMesh)
+    } else if (type === 'b') {
+     const bishopPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.22, 0.95),
+      new THREE.Vector2(0.28, 1.05),
+      new THREE.Vector2(0.22, 1.4),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(bishopPoints, 20), mat))
+     const ball = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), mat)
+     ball.position.y = 1.5
+     group.add(ball)
+    } else if (type === 'q') {
+     const queenPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.22, 1.1),
+      new THREE.Vector2(0.38, 1.45),
+      new THREE.Vector2(0.28, 1.55),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(queenPoints, 22), mat))
+     const crown = new THREE.Mesh(new THREE.SphereGeometry(0.12, 14, 14), mat)
+     crown.position.y = 1.68
+     group.add(crown)
+    } else if (type === 'k') {
+     const kingPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.24, 1.2),
+      new THREE.Vector2(0.36, 1.55),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(kingPoints, 22), mat))
+     const vCross = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.28, 0.08), mat)
+     vCross.position.y = 1.75
+     const hCross = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.08), mat)
+     hCross.position.y = 1.78
+     group.add(vCross, hCross)
+    }
+
+    group.userData = { type, color }
+    return group
+   }
+
+   // ==========================================
+   // 6. MOTOR GENERAL & HABITACIÓN TOY STORY 3D
+   // ==========================================
+   let scene, renderer, chessCamera, fpsCamera
+   let gameState = 'MENU'
+   let botDifficulty = 'normal'
+   let playerColor = 'w'
+   let currentTurn = 'w'
+
+   let boardState = []
+   let selectedSquare = null
+   let boardGroup = new THREE.Group()
+   let arenaToyRoomGroup = new THREE.Group()
+   let arenaPiecesHolder = new THREE.Group()
+   let raycaster = new THREE.Raycaster()
+   let mouse = new THREE.Vector2()
+
+   let playerObj
+   let enemyCombatHolder
+   let trackerArrow = null // Triángulo Neón Wallhack
+   let playerStats = { hp: 100, maxHp: 100, speed: 18 }
+   let enemyStats = { hp: 100, maxHp: 100, speed: 10, fireCooldown: 0 }
+   let combatPendingCapture = null
+
+   let moveForward = false,
+    moveBackward = false,
+    moveLeft = false,
+    moveRight = false,
+    canJump = false
+   let velocity = new THREE.Vector3()
+   let isAiming = false
+   let pitch = 0,
+    yaw = 0
+   const normalFOV = 70
+   const aimFOV = 40
+
+   const TABLE_Y = 16 // Altura de la mesa sobre el suelo de la habitación
+
+   function init() {
+    const container = document.getElementById('canvas-container')
+    renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    renderer.shadowMap.enabled = true
+    container.appendChild(renderer.domElement)
+
+    scene = new THREE.Scene()
+    scene.background = new THREE.Color(0x0a0c12)
+
+    // Luces
+    const ambientLight = new THREE.AmbientLight(0xfff7e6, 0.7)
+    scene.add(ambientLight)
+
+    const sunLight = new THREE.DirectionalLight(0xffffff, 0.85)
+    sunLight.position.set(50, 70, 40)
+    sunLight.castShadow = true
+    scene.add(sunLight)
+
+    chessCamera = new THREE.PerspectiveCamera(
+     45,
+     window.innerWidth / window.innerHeight,
+     0.1,
+     1000,
+    )
+    chessCamera.position.set(0, 16, 14)
+    chessCamera.lookAt(0, 0, 0)
+
+    fpsCamera = new THREE.PerspectiveCamera(
+     normalFOV,
+     window.innerWidth / window.innerHeight,
+     0.1,
+     800,
+    )
+
+    buildChessBoard()
+    buildToyStoryRoomArena()
+
+    scene.add(boardGroup)
+    scene.add(arenaToyRoomGroup)
+
+    setupEvents()
+    initGoogleAuth()
+    animate()
+   }
+
+   function buildChessBoard() {
+    boardGroup.position.set(0, 0, 0)
+    for (let r = 0; r < 8; r++) {
+     boardState[r] = []
+     for (let c = 0; c < 8; c++) {
+      const isWhite = (r + c) % 2 === 0
+      const tileMat = new THREE.MeshLambertMaterial({
+       color: isWhite ? 0xcccccc : 0x1f2833,
+      })
+      const tile = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.3, 1.6), tileMat)
+      tile.position.set((c - 3.5) * 1.6, 0, (r - 3.5) * 1.6)
+      tile.receiveShadow = true
+      tile.userData = { row: r, col: c, isTile: true }
+      boardGroup.add(tile)
+      boardState[r][c] = null
+     }
+    }
+   }
+
+   function spawnChessPieces() {
+    for (let r = 0; r < 8; r++) {
+     for (let c = 0; c < 8; c++) {
+      if (boardState[r][c]?.mesh) boardGroup.remove(boardState[r][c].mesh)
+      boardState[r][c] = null
+     }
+    }
+
+    const initialRows = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r']
+    for (let c = 0; c < 8; c++) {
+     createAndPlacePiece(initialRows[c], 'b', 0, c)
+     createAndPlacePiece('p', 'b', 1, c)
+     createAndPlacePiece('p', 'w', 6, c)
+     createAndPlacePiece(initialRows[c], 'w', 7, c)
+    }
+
+    if (playerColor === 'b') {
+     chessCamera.position.set(0, 16, -14)
+     chessCamera.lookAt(0, 0, 0)
+    } else {
+     chessCamera.position.set(0, 16, 14)
+     chessCamera.lookAt(0, 0, 0)
+    }
+   }
+
+   function createAndPlacePiece(type, color, row, col) {
+    const mesh = buildPieceMesh(type, color)
+    mesh.position.set((col - 3.5) * 1.6, 0.15, (row - 3.5) * 1.6)
+    mesh.userData = { row, col, type, color, isPiece: true }
+    boardGroup.add(mesh)
+    boardState[row][col] = { type, color, mesh }
+   }
+
+   // Construcción de la Habitación Toy Story con la Mesa y Tablero Gigante
+   function buildToyStoryRoomArena() {
+    arenaToyRoomGroup.position.set(600, 0, 0) // Arena desfasada para no solapar
+
+    // 1. Suelo de la habitación (Parqué de Madera)
+    const roomFloorGeom = new THREE.PlaneGeometry(240, 240)
+    const roomFloorMat = new THREE.MeshStandardMaterial({
+     color: 0x965628,
+     roughness: 0.6,
+    })
+    const roomFloor = new THREE.Mesh(roomFloorGeom, roomFloorMat)
+    roomFloor.rotation.x = -Math.PI / 2
+    roomFloor.receiveShadow = true
+    arenaToyRoomGroup.add(roomFloor)
+
+    // 2. Techo con lámpara colgante
+    const ceilingGeom = new THREE.PlaneGeometry(240, 240)
+    const ceilingMat = new THREE.MeshStandardMaterial({ color: 0xffffff })
+    const ceiling = new THREE.Mesh(ceilingGeom, ceilingMat)
+    ceiling.position.y = 80
+    ceiling.rotation.x = Math.PI / 2
+    arenaToyRoomGroup.add(ceiling)
+
+    const lampGeom = new THREE.ConeGeometry(8, 6, 16)
+    const lampMat = new THREE.MeshStandardMaterial({
+     color: 0xf1c40f,
+     emissive: 0xffeaa7,
+     emissiveIntensity: 0.6,
+    })
+    const lamp = new THREE.Mesh(lampGeom, lampMat)
+    lamp.position.set(0, 75, 0)
+    arenaToyRoomGroup.add(lamp)
+
+    const lampLight = new THREE.PointLight(0xfff1cf, 1.2, 160)
+    lampLight.position.set(0, 70, 0)
+    arenaToyRoomGroup.add(lampLight)
+
+    // 3. Paredes Celestes (Estilo Cielo/Toy Story)
+    const wallMat = new THREE.MeshStandardMaterial({
+     color: 0x54a0ff,
+     roughness: 0.8,
+    })
+    const wallGeom = new THREE.BoxGeometry(240, 80, 2)
+
+    const w1 = new THREE.Mesh(wallGeom, wallMat)
+    w1.position.set(0, 40, -120)
+    const w2 = new THREE.Mesh(wallGeom, wallMat)
+    w2.position.set(0, 40, 120)
+    const w3 = new THREE.Mesh(wallGeom, wallMat)
+    w3.position.set(-120, 40, 0)
+    w3.rotation.y = Math.PI / 2
+    const w4 = new THREE.Mesh(wallGeom, wallMat)
+    w4.position.set(120, 40, 0)
+    w4.rotation.y = Math.PI / 2
+    arenaToyRoomGroup.add(w1, w2, w3, w4)
+
+    // 4. Mesa Gigante de Madera en el Centro
+    const tableTop = new THREE.Mesh(
+     new THREE.BoxGeometry(130, 2.5, 130),
+     new THREE.MeshStandardMaterial({ color: 0x6e3c15 }),
+    )
+    tableTop.position.set(0, TABLE_Y, 0)
+    tableTop.receiveShadow = true
+    arenaToyRoomGroup.add(tableTop)
+
+    // Patas de la mesa (Sirven de coberturas en el suelo)
+    const legGeom = new THREE.BoxGeometry(8, TABLE_Y, 8)
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x502b0e })
+    const p1 = new THREE.Mesh(legGeom, legMat)
+    p1.position.set(58, TABLE_Y / 2, 58)
+    const p2 = new THREE.Mesh(legGeom, legMat)
+    p2.position.set(-58, TABLE_Y / 2, 58)
+    const p3 = new THREE.Mesh(legGeom, legMat)
+    p3.position.set(58, TABLE_Y / 2, -58)
+    const p4 = new THREE.Mesh(legGeom, legMat)
+    p4.position.set(-58, TABLE_Y / 2, -58)
+    arenaToyRoomGroup.add(p1, p2, p3, p4)
+
+    // 5. Tablero Gigante 3D sobre la mesa
+    const boardScale = 11 // Cada casilla mide aprox 11 unidades
+    for (let r = 0; r < 8; r++) {
+     for (let c = 0; c < 8; c++) {
+      const isWhite = (r + c) % 2 === 0
+      const tileMat = new THREE.MeshLambertMaterial({
+       color: isWhite ? 0xf0d9b5 : 0xb58863,
+      })
+      const tile = new THREE.Mesh(
+       new THREE.BoxGeometry(boardScale, 1.2, boardScale),
+       tileMat,
+      )
+      tile.position.set(
+       (c - 3.5) * boardScale,
+       TABLE_Y + 1.5,
+       (r - 3.5) * boardScale,
+      )
+      tile.receiveShadow = true
+      arenaToyRoomGroup.add(tile)
+     }
+    }
+
+    // Contenedor de las piezas gigantes de la partida actual
+    arenaToyRoomGroup.add(arenaPiecesHolder)
+
+    // 6. Jugador y Rival en Arena
+    playerObj = new THREE.Object3D()
+    playerObj.position.set(600, TABLE_Y + 4, 40)
+    scene.add(playerObj)
+
+    enemyCombatHolder = new THREE.Group()
+    enemyCombatHolder.position.set(600, TABLE_Y + 2, -40)
+    scene.add(enemyCombatHolder)
+
+    // 7. Flecha Triangular Neón (Wallhack / Rastreador)
+    const arrowGeom = new THREE.ConeGeometry(1.4, 2.8, 4)
+    arrowGeom.rotateX(Math.PI) // Punta hacia abajo señalando la cabeza
+    const arrowMat = new THREE.MeshBasicMaterial({
+     color: 0x00ffcc,
+     wireframe: true,
+     depthTest: false,
+    })
+    trackerArrow = new THREE.Mesh(arrowGeom, arrowMat)
+    trackerArrow.renderOrder = 999 // Siempre visible a través de los muros y piezas
+    trackerArrow.position.set(0, 14, 0)
+    trackerArrow.visible = false // Se activa al comprar el perk en la tienda
+    enemyCombatHolder.add(trackerArrow)
+   }
+
+   // Sincroniza las piezas del tablero al tamaño gigante de la arena
+   function syncGiantPiecesToArena() {
+    while (arenaPiecesHolder.children.length > 0) {
+     arenaPiecesHolder.remove(arenaPiecesHolder.children[0])
+    }
+
+    const boardScale = 11
+    for (let r = 0; r < 8; r++) {
+     for (let c = 0; c < 8; c++) {
+      const pieceData = boardState[r][c]
+      if (pieceData) {
+       const giantPiece = buildPieceMesh(pieceData.type, pieceData.color)
+       giantPiece.scale.set(6.8, 6.8, 6.8) // Tamaño arquitectónico gigante para cubrirse
+       giantPiece.position.set(
+        (c - 3.5) * boardScale,
+        TABLE_Y + 2,
+        (r - 3.5) * boardScale,
+       )
+       arenaPiecesHolder.add(giantPiece)
+      }
+     }
+    }
+   }
+
+   function selectDifficulty(diff) {
+    botDifficulty = diff
+    document.getElementById('diff-menu').style.display = 'none'
+    document.getElementById('color-menu').style.display = 'flex'
+   }
+
+   function selectColor(color) {
+    playerColor = color
+    document.getElementById('color-menu').style.display = 'none'
+    gameState = 'CHESS'
+    currentTurn = 'w'
+    spawnChessPieces()
+    updateTurnBanner()
+
+    if (playerColor === 'b') {
+     setTimeout(botPlay, 1000)
+    }
+   }
+
+   function updateTurnBanner() {
+    const isPlayerTurn = currentTurn === playerColor
+    document.getElementById('info-banner').innerText = isPlayerTurn
+     ? 'TU TURNO (Selecciona una pieza y muévela)'
+     : 'Turno del BOT pensando...'
+   }
+
+   function onChessClick(event) {
+    if (gameState !== 'CHESS' || currentTurn !== playerColor) return
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+    raycaster.setFromCamera(mouse, chessCamera)
+
+    const intersects = raycaster.intersectObjects(boardGroup.children, true)
+    if (intersects.length === 0) return
+
+    let hit = intersects[0].object
+    while (hit.parent && hit.parent !== boardGroup && !hit.userData.isTile) {
+     hit = hit.parent
+    }
+
+    const row = hit.userData.row
+    const col = hit.userData.col
+    if (row === undefined || col === undefined) return
+
+    if (selectedSquare === null) {
+     if (boardState[row][col] && boardState[row][col].color === playerColor) {
+      selectedSquare = { row, col }
+      playUiSound(750, 'sine', 0.05)
+     }
+    } else {
+     if (selectedSquare.row === row && selectedSquare.col === col) {
+      selectedSquare = null
+      return
+     }
+
+     const fromR = selectedSquare.row,
+      fromC = selectedSquare.col
+     const movingPiece = boardState[fromR][fromC]
+     const target = boardState[row][col]
+
+     if (!target) {
+      executeChessMove(fromR, fromC, row, col)
+      playUiSound(300, 'sine', 0.08)
+      endTurn()
+     } else if (target.color !== playerColor) {
+      triggerCombatWithVideo(movingPiece, target, fromR, fromC, row, col)
+     } else {
+      selectedSquare = { row, col }
+      playUiSound(750, 'sine', 0.05)
+     }
+    }
+   }
+
+   function executeChessMove(fromR, fromC, toR, toC) {
+    const piece = boardState[fromR][fromC]
+    boardState[toR][toC] = piece
+    boardState[fromR][fromC] = null
+    piece.mesh.position.set((toC - 3.5) * 1.6, 0.15, (toR - 3.5) * 1.6)
+    piece.mesh.userData.row = toR
+    piece.mesh.userData.col = toC
+    selectedSquare = null
+   }
+
+   function endTurn() {
+    currentTurn = currentTurn === 'w' ? 'b' : 'w'
+    updateTurnBanner()
+    if (currentTurn !== playerColor && gameState === 'CHESS') {
+     setTimeout(botPlay, 800)
+    }
+   }
+
+   function botPlay() {
+    if (gameState !== 'CHESS') return
+
+    const moves = []
+    for (let r = 0; r < 8; r++) {
+     for (let c = 0; c < 8; c++) {
+      if (boardState[r][c] && boardState[r][c].color !== playerColor) {
+       const dir = boardState[r][c].color === 'w' ? -1 : 1
+       const nextR = r + dir
+       if (nextR >= 0 && nextR < 8) {
+        if (!boardState[nextR][c])
+         moves.push({ fromR: r, fromC: c, toR: nextR, toC: c, capture: false })
+        if (c > 0 && boardState[nextR][c - 1]?.color === playerColor) {
+         moves.push({
+          fromR: r,
+          fromC: c,
+          toR: nextR,
+          toC: c - 1,
+          capture: true,
+         })
+        }
+        if (c < 7 && boardState[nextR][c + 1]?.color === playerColor) {
+         moves.push({
+          fromR: r,
+          fromC: c,
+          toR: nextR,
+          toC: c + 1,
+          capture: true,
+         })
+        }
+       }
+      }
+     }
+    }
+
+    if (moves.length === 0) {
+     alert('¡Victoria o Tablas! +150 Monedas conseguidas.')
+     addCoins(150)
+     return
+    }
+
+    let chosen = moves[0]
+    if (botDifficulty !== 'easy') {
+     const captures = moves.filter((m) => m.capture)
+     if (captures.length > 0)
+      chosen = captures[Math.floor(Math.random() * captures.length)]
+     else chosen = moves[Math.floor(Math.random() * moves.length)]
+    } else {
+     chosen = moves[Math.floor(Math.random() * moves.length)]
+    }
+
+    const attacker = boardState[chosen.fromR][chosen.fromC]
+    const defender = boardState[chosen.toR][chosen.toC]
+
+    if (chosen.capture) {
+     triggerCombatWithVideo(
+      attacker,
+      defender,
+      chosen.fromR,
+      chosen.fromC,
+      chosen.toR,
+      chosen.toC,
+     )
+    } else {
+     executeChessMove(chosen.fromR, chosen.fromC, chosen.toR, chosen.toC)
+     endTurn()
+    }
+   }
+
+   function triggerCombatWithVideo(attacker, defender, fromR, fromC, toR, toC) {
+    playCinematic(CINEMATIC_VIDEOS.captureTransition, () => {
+     startCombat(attacker, defender, fromR, fromC, toR, toC)
+    })
+   }
+
+   // ==========================================
+   // 7. ARENA SHOOTER EN LA HABITACIÓN
+   // ==========================================
+   function startCombat(attacker, defender, fromR, fromC, toR, toC) {
+    gameState = 'COMBAT'
+    combatPendingCapture = { attacker, defender, fromR, fromC, toR, toC }
+
+    playerStats.hp = 100
+    enemyStats.hp = 100
+    enemyStats.fireCooldown = 0
+    updateHPBars()
+
+    // Sincronizar las piezas gigantes de la partida actual en la mesa 3D
+    syncGiantPiecesToArena()
+
+    // Reemplazar modelo del rival por la pieza enemiga real
+    while (enemyCombatHolder.children.length > 0) {
+     enemyCombatHolder.remove(enemyCombatHolder.children[0])
+    }
+    const enemyPieceMesh = buildPieceMesh(defender.type, defender.color)
+    enemyPieceMesh.scale.set(6.8, 6.8, 6.8)
+    enemyCombatHolder.add(enemyPieceMesh)
+
+    // Si tiene el perk de Wallhack / Tracker, reinstanciar la flecha
+    if (ownedItems.perks.includes('tracker')) {
+     trackerArrow.visible = true
+     enemyCombatHolder.add(trackerArrow)
+    }
+
+    renderer.domElement.requestPointerLock()
+
+    // Posiciones sobre la mesa gigante
+    playerObj.position.set(600, TABLE_Y + 4, 40)
+    enemyCombatHolder.position.set(600, TABLE_Y + 2, -40)
+    velocity.set(0, 0, 0)
+    yaw = Math.PI
+    pitch = 0
+
+    document.getElementById('fps-hud').style.display = 'block'
+    document.getElementById('enemy-hp-label').innerText =
+     `Rival: ${defender.type.toUpperCase()}`
+    document.getElementById('info-banner').innerText =
+     '¡ARENA HABITACIÓN 3D! Puedes saltar al piso o cubrirte tras las piezas gigantes.'
+   }
+
+   function finishCombat(playerWon) {
+    document.exitPointerLock()
+    document.getElementById('fps-hud').style.display = 'none'
+
+    playCinematic(CINEMATIC_VIDEOS.combatVictory, () => {
+     gameState = 'CHESS'
+     const { attacker, defender, fromR, fromC, toR, toC } = combatPendingCapture
+
+     if (attacker.color === playerColor) {
+      if (playerWon) {
+       boardGroup.remove(defender.mesh)
+       executeChessMove(fromR, fromC, toR, toC)
+       addCoins(50) // Recompensa por ganar duelo
+      } else {
+       boardGroup.remove(attacker.mesh)
+       boardState[fromR][fromC] = null
+       selectedSquare = null
+      }
+     } else {
+      if (playerWon) {
+       boardGroup.remove(attacker.mesh)
+       boardState[fromR][fromC] = null
+       addCoins(50)
+      } else {
+       boardGroup.remove(defender.mesh)
+       executeChessMove(fromR, fromC, toR, toC)
+      }
+     }
+
+     combatPendingCapture = null
+     endTurn()
+    })
+   }
+
+   function updateHPBars() {
+    document.getElementById('player-hp').style.width =
+     Math.max(0, playerStats.hp) + '%'
+    document.getElementById('enemy-hp').style.width =
+     Math.max(0, enemyStats.hp) + '%'
+   }
+
+   function setupEvents() {
+    window.addEventListener('resize', () => {
+     chessCamera.aspect = window.innerWidth / window.innerHeight
+     chessCamera.updateProjectionMatrix()
+     fpsCamera.aspect = window.innerWidth / window.innerHeight
+     fpsCamera.updateProjectionMatrix()
+     renderer.setSize(window.innerWidth, window.innerHeight)
+    })
+
+    window.addEventListener('click', onChessClick)
+
+    window.addEventListener('mousemove', (e) => {
+     if (
+      gameState !== 'COMBAT' ||
+      document.pointerLockElement !== renderer.domElement
+     )
+      return
+     const sens = isAiming ? 0.0012 : 0.0025
+     yaw -= e.movementX * sens
+     pitch -= e.movementY * sens
+     pitch = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, pitch))
+    })
+
+    window.addEventListener('mousedown', (e) => {
+     if (gameState !== 'COMBAT') return
+     if (e.button === 0) shootPlayerWeapon()
+     else if (e.button === 2) isAiming = true
+    })
+
+    window.addEventListener('mouseup', (e) => {
+     if (gameState !== 'COMBAT') return
+     if (e.button === 2) isAiming = false
+    })
+
+    window.addEventListener('contextmenu', (e) => e.preventDefault())
+
+    window.addEventListener('keydown', (e) => {
+     if (
+      e.code === 'Escape' &&
+      document.getElementById('cinematic-container').style.display === 'block'
+     ) {
+      skipCinematic()
+      return
+     }
+
+     if (gameState !== 'COMBAT') return
+     if (e.code === 'KeyW') moveForward = true
+     if (e.code === 'KeyS') moveBackward = true
+     if (e.code === 'KeyA') moveLeft = true
+     if (e.code === 'KeyD') moveRight = true
+     if (e.code === 'Space' && canJump) {
+      velocity.y = 15
+      canJump = false
+     }
+    })
+
+    window.addEventListener('keyup', (e) => {
+     if (gameState !== 'COMBAT') return
+     if (e.code === 'KeyW') moveForward = false
+     if (e.code === 'KeyS') moveBackward = false
+     if (e.code === 'KeyA') moveLeft = false
+     if (e.code === 'KeyD') moveRight = false
+    })
+   }
+
+   function shootPlayerWeapon() {
+    playWeaponSound(currentWeapon)
+
+    const dir = new THREE.Vector3()
+    fpsCamera.getWorldDirection(dir)
+
+    // Daño y características según el arma equipada
+    let damage = 25
+    let tracerColor = 0x66fcf1
+    let pelletCount = 1
+
+    if (currentWeapon === 'shotgun') {
+     damage = 45
+     tracerColor = 0xffa502
+     pelletCount = 4
+    } else if (currentWeapon === 'sniper') {
+     damage = 85
+     tracerColor = 0xe056fd
+     pelletCount = 1
+    }
+
+    let hitEnemy = false
+
+    for (let i = 0; i < pelletCount; i++) {
+     const shootDir = dir.clone()
+     if (currentWeapon === 'shotgun') {
+      shootDir.x += (Math.random() - 0.5) * 0.08
+      shootDir.y += (Math.random() - 0.5) * 0.08
+      shootDir.z += (Math.random() - 0.5) * 0.08
+      shootDir.normalize()
+     }
+
+     const ray = new THREE.Raycaster(playerObj.position, shootDir, 0, 300)
+     const hits = ray.intersectObjects(enemyCombatHolder.children, true)
+
+     if (hits.length > 0) {
+      hitEnemy = true
+     }
+     createTracer(playerObj.position, shootDir, tracerColor)
+    }
+
+    if (hitEnemy) {
+     enemyStats.hp -= damage
+     updateHPBars()
+     playUiSound(900, 'square', 0.05)
+     if (enemyStats.hp <= 0) finishCombat(true)
+    }
+   }
+
+   function createTracer(origin, dir, colorHex) {
+    const tracerGeom = new THREE.CylinderGeometry(0.06, 0.06, 3)
+    const tracerMat = new THREE.MeshBasicMaterial({ color: colorHex })
+    const tracer = new THREE.Mesh(tracerGeom, tracerMat)
+    tracer.position.copy(origin).add(dir.clone().multiplyScalar(2))
+    tracer.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir)
+    scene.add(tracer)
+
+    setTimeout(() => scene.remove(tracer), 60)
+   }
+
+   // ==========================================
+   // 8. BUCLE PRINCIPAL DE ANIMACIÓN
+   // ==========================================
+   let prevTime = performance.now()
+
+   function animate() {
+    requestAnimationFrame(animate)
+
+    const time = performance.now()
+    const delta = Math.min((time - prevTime) / 1000, 0.1)
+    prevTime = time
+
+    if (gameState === 'COMBAT') {
+     updateCombat(delta)
+     renderer.render(scene, fpsCamera)
+    } else {
+     renderer.render(scene, chessCamera)
+    }
+   }
+
+   function updateCombat(delta) {
+    // Manejo de FOV / Zoom de Francotirador
+    const targetFOV = isAiming
+     ? currentWeapon === 'sniper'
+       ? 20
+       : aimFOV
+     : normalFOV
+    fpsCamera.fov = THREE.MathUtils.lerp(fpsCamera.fov, targetFOV, delta * 12)
+    fpsCamera.updateProjectionMatrix()
+
+    // Movimiento Jugador con WASD
+    const moveVector = new THREE.Vector3()
+    if (moveForward) moveVector.z -= 1
+    if (moveBackward) moveVector.z += 1
+    if (moveLeft) moveVector.x -= 1
+    if (moveRight) moveVector.x += 1
+    moveVector.normalize()
+
+    moveVector.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw)
+    playerObj.position.x += moveVector.x * playerStats.speed * delta
+    playerObj.position.z += moveVector.z * playerStats.speed * delta
+
+    // Gravedad con soporte para mesa y suelo de la habitación
+    velocity.y -= 32 * delta
+    playerObj.position.y += velocity.y * delta
+
+    // Lógica de superficies: Estar sobre la mesa o bajar al piso
+    const onTableArea =
+     playerObj.position.x >= 535 &&
+     playerObj.position.x <= 665 &&
+     playerObj.position.z >= -65 &&
+     playerObj.position.z <= 65
+
+    const floorLimit =
+     onTableArea && playerObj.position.y >= TABLE_Y + 2 ? TABLE_Y + 4 : 2.5
+
+    if (playerObj.position.y <= floorLimit) {
+     playerObj.position.y = floorLimit
+     velocity.y = 0
+     canJump = true
+    }
+
+    // Límites dentro de la habitación gigante (600 ± 110)
+    playerObj.position.x = Math.max(490, Math.min(710, playerObj.position.x))
+    playerObj.position.z = Math.max(-110, Math.min(110, playerObj.position.z))
+
+    fpsCamera.position.copy(playerObj.position)
+    fpsCamera.rotation.set(0, 0, 0)
+    fpsCamera.rotation.y = yaw
+    fpsCamera.rotation.x = pitch
+
+    // Animación del Wallhack / Triángulo Neón
+    if (trackerArrow && trackerArrow.visible) {
+     trackerArrow.rotation.y += delta * 3
+     trackerArrow.position.y = 12 + Math.sin(performance.now() * 0.005) * 1.2
+    }
+
+    // IA y Disparo del Rival en la arena
+    const enemyCenter = enemyCombatHolder.position
+     .clone()
+     .add(new THREE.Vector3(0, 4, 0))
+    const toPlayer = new THREE.Vector3().subVectors(
+     playerObj.position,
+     enemyCenter,
+    )
+    enemyCombatHolder.rotation.y = Math.atan2(toPlayer.x, toPlayer.z)
+
+    // Movimiento lateral del bot
+    enemyCombatHolder.position.x +=
+     Math.sin(performance.now() * 0.002) * 8 * delta
+
+    enemyStats.fireCooldown += delta
+    const attackInterval =
+     botDifficulty === 'hard' ? 1.6 : botDifficulty === 'normal' ? 2.3 : 3.2
+
+    if (enemyStats.fireCooldown >= attackInterval) {
+     enemyStats.fireCooldown = 0
+
+     const accuracy =
+      botDifficulty === 'hard' ? 0.75 : botDifficulty === 'normal' ? 0.5 : 0.25
+     const isHit = Math.random() < accuracy
+
+     createTracer(enemyCenter, toPlayer.clone().normalize(), 0xff0055)
+
+     if (isHit) {
+      playerStats.hp -=
+       botDifficulty === 'hard' ? 22 : botDifficulty === 'normal' ? 16 : 10
+      updateHPBars()
+      playUiSound(160, 'sawtooth', 0.12)
+
+      if (playerStats.hp <= 0) {
+       finishCombat(false)
+      }
+     }
+    }
+   }
+
+   window.onload = init
+  </script>
+ </body>
+</html>
