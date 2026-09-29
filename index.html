@@ -1,0 +1,2844 @@
+<!doctype html>
+<html lang="es">
+ <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>FPS Chess 3D - CAVIREY SENA Edition | Toy Story Arena</title>
+  <style>
+   * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+   }
+   body {
+    background: #0b0c10;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden;
+    color: #fff;
+   }
+   #canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+   }
+   .ui-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(11, 12, 16, 0.94);
+    z-index: 10;
+   }
+   .card {
+    background: #1f2833;
+    border: 2px solid #66fcf1;
+    padding: 24px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(102, 252, 241, 0.3);
+    min-width: 360px;
+    max-width: 580px;
+    max-height: 92vh;
+    overflow-y: auto;
+   }
+   h1 {
+    margin-bottom: 8px;
+    color: #66fcf1;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 22px;
+   }
+   h2 {
+    color: #f1c40f;
+    margin: 8px 0;
+    font-size: 16px;
+   }
+   p {
+    margin-bottom: 12px;
+    color: #c5c6c7;
+    font-size: 13px;
+    line-height: 1.4;
+   }
+   .btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+   }
+   button {
+    background: transparent;
+    border: 2px solid #45a29e;
+    color: #fff;
+    padding: 9px 16px;
+    font-size: 13px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+   }
+   button:hover {
+    background: #66fcf1;
+    color: #0b0c10;
+    border-color: #66fcf1;
+    box-shadow: 0 0 10px #66fcf1;
+   }
+   button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+   }
+   button.danger {
+    border-color: #ff4757;
+    color: #ff6b81;
+   }
+   button.danger:hover {
+    background: #ff4757;
+    color: #fff;
+   }
+   #top-bar {
+    position: absolute;
+    top: 15px;
+    left: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 15;
+    align-items: center;
+   }
+   .coin-display {
+    background: rgba(31, 40, 51, 0.85);
+    border: 2px solid #f1c40f;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    color: #f1c40f;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+   }
+   .nav-btn {
+    background: #1f2833;
+    border-color: #45a29e;
+    color: #66fcf1;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+   }
+   .nav-btn:hover {
+    background: #45a29e;
+    color: #0b0c10;
+   }
+   #user-badge {
+    display: none;
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    align-items: center;
+    gap: 8px;
+    z-index: 15;
+    background: rgba(31, 40, 51, 0.9);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid #45a29e;
+   }
+   #user-badge img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #66fcf1;
+   }
+   #user-badge span {
+    font-size: 12px;
+    font-weight: bold;
+    color: #66fcf1;
+   }
+   #cinematic-container {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000;
+    z-index: 30;
+   }
+   #cinematic-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+   }
+   #skip-btn {
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    z-index: 35;
+    font-size: 11px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.6);
+   }
+   #fps-hud {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 5;
+   }
+   #crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #66fcf1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 6px #66fcf1;
+   }
+   #crosshair.aiming {
+    width: 8px;
+    height: 8px;
+    border-color: #ffa502;
+   }
+   .health-bar-container {
+    position: absolute;
+    bottom: 28px;
+    width: 240px;
+    height: 18px;
+    background: #222;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    overflow: hidden;
+   }
+   #player-hp-bar {
+    left: 24px;
+   }
+   #enemy-hp-bar {
+    right: 24px;
+   }
+   .hp-fill {
+    height: 100%;
+    width: 100%;
+    background: #45a29e;
+    transition: width 0.15s;
+   }
+   .hp-label {
+    position: absolute;
+    bottom: 50px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+   }
+   #player-hp-label {
+    left: 24px;
+    color: #66fcf1;
+   }
+   #enemy-hp-label {
+    right: 24px;
+    color: #ff4757;
+   }
+   #weapon-hud {
+    position: absolute;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #66fcf1;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 11px;
+    pointer-events: none;
+    text-align: center;
+   }
+   #weapon-hud strong {
+    color: #66fcf1;
+   }
+   #ability-hud {
+    position: absolute;
+    bottom: 72px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: #f1c40f;
+    text-align: center;
+    pointer-events: none;
+    text-shadow: 0 0 6px #000;
+   }
+   #info-banner {
+    position: absolute;
+    top: 18px;
+    width: 100%;
+    text-align: center;
+    font-size: 15px;
+    color: #66fcf1;
+    z-index: 2;
+    text-shadow: 0 0 10px #000;
+    pointer-events: none;
+    padding: 0 120px;
+   }
+   .shop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+   }
+   .shop-item {
+    background: #0b0c10;
+    border: 1px solid #45a29e;
+    border-radius: 8px;
+    padding: 10px;
+    text-align: center;
+   }
+   .shop-item h3 {
+    font-size: 13px;
+    color: #66fcf1;
+    margin-bottom: 4px;
+   }
+   .shop-item p {
+    font-size: 11px;
+    margin-bottom: 6px;
+   }
+   .lobby-code {
+    font-size: 28px;
+    letter-spacing: 8px;
+    color: #f1c40f;
+    background: #0b0c10;
+    border: 2px dashed #f1c40f;
+    padding: 10px 18px;
+    border-radius: 8px;
+    margin: 10px 0;
+    user-select: text;
+   }
+   .promo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin: 12px 0;
+   }
+   .promo-btn {
+    padding: 14px 6px;
+    border-color: #f1c40f;
+   }
+   .promo-btn small {
+    display: block;
+    color: #aaa;
+    font-weight: normal;
+    margin-top: 4px;
+   }
+   .room-input {
+    width: 100%;
+    padding: 9px;
+    background: #0b0c10;
+    border: 2px solid #45a29e;
+    color: #fff;
+    border-radius: 6px;
+    text-align: center;
+    letter-spacing: 4px;
+    font-size: 16px;
+    text-transform: uppercase;
+   }
+   .status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff4757;
+    margin-right: 6px;
+   }
+   .status-dot.ok {
+    background: #2ed573;
+    box-shadow: 0 0 8px #2ed573;
+   }
+   .king-alert {
+    color: #ff4757;
+    animation: pulse 1s infinite;
+   }
+   @keyframes pulse {
+    0%,
+    100% {
+     opacity: 1;
+    }
+    50% {
+     opacity: 0.5;
+    }
+   }
+
+   /* Elementos Rúbrica SENA */
+   .pass-track {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 10px 4px;
+    background: #0b0c10;
+    border-radius: 8px;
+    margin: 12px 0;
+   }
+   .pass-tier {
+    min-width: 90px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #45a29e;
+    background: #151c24;
+    font-size: 11px;
+    text-align: center;
+   }
+   .pass-tier.unlocked {
+    border-color: #2ed573;
+    background: #0f2b1d;
+   }
+   .chat-box {
+    height: 180px;
+    overflow-y: auto;
+    background: #0b0c10;
+    border: 1px solid #45a29e;
+    border-radius: 6px;
+    padding: 8px;
+    text-align: left;
+    font-size: 12px;
+    margin-bottom: 8px;
+   }
+   .chat-msg {
+    margin-bottom: 4px;
+    line-height: 1.3;
+   }
+   .chat-msg strong {
+    color: #66fcf1;
+   }
+   table.ranking-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 10px;
+   }
+   table.ranking-table th,
+   table.ranking-table td {
+    border: 1px solid #334;
+    padding: 6px 8px;
+    text-align: center;
+   }
+   table.ranking-table th {
+    background: #111a24;
+    color: #66fcf1;
+   }
+   .dialog-box {
+    background: rgba(15, 23, 42, 0.95);
+    border: 2px solid #f1c40f;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 0;
+    text-align: left;
+    font-size: 12px;
+    color: #e2e8f0;
+   }
+  </style>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.js"></script>
+  <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+  <!-- FIREBASE SCRIPTS COMPAT CDN (RÚBRICA SENA - FASE 5) -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+ </head>
+ <body>
+  <div id="canvas-container"></div>
+  <div id="info-banner">FPS Chess 3D — Toy Story Arena</div>
+
+  <!-- Barra Superior -->
+  <div id="top-bar">
+   <div class="coin-display">🪙 <span id="coin-count">300</span></div>
+   <div class="coin-display" style="border-color: #66fcf1; color: #66fcf1">
+    ⭐ Nivel <span id="user-level">1</span>
+   </div>
+   <button class="nav-btn" onclick="openShopModal()">🛒 Armería</button>
+   <button class="nav-btn" onclick="openBattlePassModal()">🎖️ Pase</button>
+   <button class="nav-btn" onclick="openRankingModal()">🏆 Ranking</button>
+   <button class="nav-btn" onclick="openChatModal()">💬 Chat Global</button>
+   <div
+    id="net-status"
+    style="
+     font-size: 11px;
+     color: #aaa;
+     display: flex;
+     align-items: center;
+     gap: 4px;
+    "
+   >
+    <span class="status-dot" id="net-dot"></span
+    ><span id="net-text">Offline</span>
+   </div>
+  </div>
+
+  <div id="user-badge">
+   <img id="user-avatar" src="" alt="" />
+   <span id="user-name">Usuario</span>
+  </div>
+
+  <!-- Cinemáticas -->
+  <div id="cinematic-container">
+   <video id="cinematic-video" playsinline muted></video>
+   <button id="skip-btn" onclick="skipCinematic()">Omitir (ESC)</button>
+  </div>
+
+  <!-- AUTH / BIENVENIDA -->
+  <div id="auth-menu" class="ui-layer">
+   <div class="card">
+    <h1 style="font-size: 20px">⚔️ FPS Chess: Toy Story Arena</h1>
+    <p style="color: #f1c40f; font-weight: bold; margin-bottom: 6px">
+     Colegio CAVIREY | Media Técnica SENA
+    </p>
+    <p style="font-size: 12px">
+     Inicia sesión con Google o ingresa tu Nickname para sincronizar
+     estadísticas en Firestore:
+    </p>
+
+    <div style="margin-bottom: 12px">
+     <input
+      id="nickname-input"
+      class="room-input"
+      style="font-size: 14px; letter-spacing: 2px"
+      placeholder="Tu Nickname (ej. NeoChess)"
+     />
+    </div>
+
+    <div
+     id="google-btn-container"
+     style="display: flex; justify-content: center; margin-bottom: 12px"
+    ></div>
+
+    <button
+     onclick="handleMenuClick(() => loginWithNickname())"
+     style="
+      width: 100%;
+      border-color: #2ed573;
+      color: #2ed573;
+      margin-bottom: 8px;
+     "
+    >
+     🚀 Entrar con Nickname
+    </button>
+    <button
+     onclick="handleMenuClick(() => bypassAuth())"
+     style="border-style: dashed; font-size: 11px; color: #aaa; width: 100%"
+    >
+     Jugar como Invitado
+    </button>
+   </div>
+  </div>
+
+  <!-- LOBBY PRINCIPAL -->
+  <div id="lobby-menu" class="ui-layer" style="display: none">
+   <div class="card">
+    <h1>Centro de Mando</h1>
+    <p>Selecciona tu modo de juego o avanza en la historia:</p>
+    <div class="btn-group">
+     <button
+      onclick="
+       handleMenuClick(() => startCampaignMission(currentCampaignMission))
+      "
+      style="border-color: #f1c40f; color: #f1c40f"
+     >
+      📜 Campaña: Misiones de Historia (1-3)
+     </button>
+     <button onclick="handleMenuClick(() => chooseLocalMode())">
+      🎮 Modo Libre vs Bot (IA 3D)
+     </button>
+     <button
+      onclick="handleMenuClick(() => showHostSetup())"
+      style="border-color: #66fcf1; color: #66fcf1"
+     >
+      📡 Crear Sala Multijugador (Host P2P)
+     </button>
+
+     <div
+      style="
+       background: #0b0c10;
+       border: 1px solid #45a29e;
+       border-radius: 8px;
+       padding: 10px;
+      "
+     >
+      <p style="margin-bottom: 6px">Unirse a Sala P2P (Código 5 caracteres)</p>
+      <input
+       id="join-code-input"
+       class="room-input"
+       maxlength="5"
+       placeholder="AB12C"
+      />
+      <button
+       onclick="handleMenuClick(() => joinRoom())"
+       style="width: 100%; margin-top: 8px"
+      >
+       🔗 Unirse a Sala
+      </button>
+     </div>
+
+     <button
+      onclick="buyPremium()"
+      style="
+       background: linear-gradient(135deg, #f1c40f, #e67e22);
+       border: none;
+       color: #0b0c10;
+       font-weight: bold;
+       margin-top: 6px;
+      "
+     >
+      ⭐ Membresía VIP ($50/mes Simulado)
+     </button>
+    </div>
+    <p
+     id="lobby-error"
+     style="color: #ff4757; font-size: 11px; min-height: 14px; margin-top: 8px"
+    ></p>
+   </div>
+  </div>
+
+  <!-- MODAL CAMPAÑA / MISIONES (RÚBRICA NARRATIVA) -->
+  <div id="campaign-modal" class="ui-layer" style="display: none; z-index: 42">
+   <div class="card" style="max-width: 520px">
+    <h1 id="mission-title" style="color: #f1c40f">
+     Misión 1: Despertar en la Habitación
+    </h1>
+    <div class="dialog-box" id="mission-dialog">
+     <strong>Sargento Peón:</strong> "¡Las piezas negras han tomado la mesa
+     principal! Muévete, toma el control del centro y neutraliza a la patrulla
+     enemiga."
+    </div>
+    <p
+     id="mission-objective"
+     style="color: #66fcf1; font-size: 12px; font-weight: bold"
+    >
+     Objetivo: Gana un combate o captura una pieza enemiga.
+    </p>
+    <div class="btn-group">
+     <button
+      onclick="launchMissionGame()"
+      style="background: #2ed573; border: none; color: #000"
+     >
+      Empezar Misión
+     </button>
+     <button onclick="closeCampaignModal()" class="danger">Volver</button>
+    </div>
+   </div>
+  </div>
+
+  <!-- MODAL PASE DE BATALLA (FASE 6 PRO) -->
+  <div
+   id="battlepass-modal"
+   class="ui-layer"
+   style="display: none; z-index: 43"
+  >
+   <div class="card" style="max-width: 560px">
+    <h1>🎖️ Pase de Batalla: Temporada 1</h1>
+    <p>Gana EXP en partidas y duelos para desbloquear recompensas:</p>
+    <div style="font-size: 12px; margin-bottom: 6px; color: #66fcf1">
+     Progreso de Nivel: <span id="pass-exp-text">0 / 100 EXP</span>
+    </div>
+
+    <div class="pass-track" id="pass-track-container"></div>
+
+    <div class="btn-group" style="margin-top: 10px">
+     <button
+      onclick="claimPassReward()"
+      style="border-color: #f1c40f; color: #f1c40f"
+     >
+      Reclamar Recompensas
+     </button>
+     <button onclick="closeBattlePassModal()">Cerrar</button>
+    </div>
+   </div>
+  </div>
+
+  <!-- MODAL RANKING GLOBAL (FIRESTORE) -->
+  <div id="ranking-modal" class="ui-layer" style="display: none; z-index: 43">
+   <div class="card" style="max-width: 500px">
+    <h1>🏆 Ranking del Colegio (Top 10)</h1>
+    <p>Estadísticas sincronizadas en la nube:</p>
+    <div style="max-height: 240px; overflow-y: auto">
+     <table class="ranking-table" id="ranking-table">
+      <thead>
+       <tr>
+        <th>#</th>
+        <th>Jugador</th>
+        <th>Victorias</th>
+        <th>Nivel</th>
+        <th>Monedas</th>
+       </tr>
+      </thead>
+      <tbody id="ranking-tbody">
+       <tr>
+        <td colspan="5">Cargando clasificación...</td>
+       </tr>
+      </tbody>
+     </table>
+    </div>
+    <button onclick="closeRankingModal()" style="margin-top: 14px">
+     Cerrar
+    </button>
+   </div>
+  </div>
+
+  <!-- MODAL CHAT GLOBAL (FIRESTORE) -->
+  <div id="chat-modal" class="ui-layer" style="display: none; z-index: 43">
+   <div class="card" style="max-width: 480px">
+    <h1>💬 Chat Global & Clanes</h1>
+    <p>Comunícate en tiempo real con otros cadetes conectados:</p>
+    <div class="chat-box" id="chat-messages-container"></div>
+    <div style="display: flex; gap: 8px">
+     <input
+      id="chat-input"
+      class="room-input"
+      style="font-size: 13px; text-transform: none; letter-spacing: normal"
+      placeholder="Escribe un mensaje..."
+      onkeypress="if (event.key === 'Enter') sendChatMessage()"
+     />
+     <button
+      onclick="sendChatMessage()"
+      style="border-color: #2ed573; color: #2ed573"
+     >
+      Enviar
+     </button>
+    </div>
+    <button onclick="closeChatModal()" style="margin-top: 10px; width: 100%">
+     Cerrar
+    </button>
+   </div>
+  </div>
+
+  <!-- Host Setup -->
+  <div id="host-setup" class="ui-layer" style="display: none">
+   <div class="card">
+    <h1>Crear Sala</h1>
+    <p>
+     Comparte el código con tu rival. Elige bando — el rival recibe el opuesto.
+    </p>
+    <div id="host-code-area" style="display: none">
+     <p>Sala ID:</p>
+     <div class="lobby-code" id="host-code-display">-----</div>
+     <p id="host-wait" style="color: #f1c40f">Esperando rival...</p>
+     <p id="host-peer-status" style="font-size: 11px; color: #aaa"></p>
+    </div>
+    <div class="btn-group" id="host-color-choices">
+     <button onclick="createHost('w')">Jugar Blancas (Host)</button>
+     <button onclick="createHost('b')">Jugar Negras (Host)</button>
+     <button onclick="backToLobby()" class="danger">Volver</button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Dificultad -->
+  <div id="diff-menu" class="ui-layer" style="display: none">
+   <div class="card">
+    <h1>Dificultad IA</h1>
+    <p>Solo para modo Local vs Bot. En P2P la dificultad no aplica.</p>
+    <div class="btn-group">
+     <button onclick="handleMenuClick(() => selectDifficulty('easy'))">
+      Fácil (800 Elo) — cadencia lenta
+     </button>
+     <button onclick="handleMenuClick(() => selectDifficulty('normal'))">
+      Normal (1600 Elo)
+     </button>
+     <button onclick="handleMenuClick(() => selectDifficulty('hard'))">
+      Difícil (2000 Elo) — flanqueo
+     </button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Color solo local -->
+  <div id="color-menu" class="ui-layer" style="display: none">
+   <div class="card">
+    <h1>Bando</h1>
+    <p>Elige color (Local).</p>
+    <div class="btn-group">
+     <button onclick="handleMenuClick(() => selectColor('w'))">
+      Blancas (empiezas)
+     </button>
+     <button onclick="handleMenuClick(() => selectColor('b'))">
+      Negras (empieza bot)
+     </button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Promoción -->
+  <div id="promotion-modal" class="ui-layer" style="display: none">
+   <div class="card" style="border-color: #f1c40f">
+    <h1 style="color: #f1c40f">¡Coronación!</h1>
+    <p>Peón en 8ª fila — elige promoción:</p>
+    <div class="promo-grid">
+     <button class="promo-btn" onclick="resolvePromotion('q')">
+      ♕ Dama <small>(q)</small>
+     </button>
+     <button class="promo-btn" onclick="resolvePromotion('r')">
+      ♖ Torre <small>(r)</small>
+     </button>
+     <button class="promo-btn" onclick="resolvePromotion('b')">
+      ♗ Alfil <small>(b)</small>
+     </button>
+     <button class="promo-btn" onclick="resolvePromotion('n')">
+      ♘ Caballo <small>(n)</small>
+     </button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="gameover-modal" class="ui-layer" style="display: none">
+   <div class="card" id="gameover-card">
+    <h1 id="gameover-title">¡JAQUE MATE!</h1>
+    <p id="gameover-sub">Partida terminada</p>
+    <div
+     id="gameover-reward"
+     style="color: #f1c40f; font-weight: bold; margin: 8px 0"
+    ></div>
+    <div class="btn-group">
+     <button onclick="resetToLobby()">Volver al Lobby</button>
+     <button onclick="location.reload()" class="danger">Recargar</button>
+    </div>
+   </div>
+  </div>
+
+  <!-- Tienda perks -->
+  <div id="shop-modal" class="ui-layer" style="display: none; z-index: 40">
+   <div class="card" style="max-width: 520px">
+    <h1>Armería & Ventajas</h1>
+    <p>Armas ahora por clase de pieza. Aquí solo perks globales.</p>
+    <div class="shop-grid" style="grid-template-columns: 1fr 1fr 1fr">
+     <div class="shop-item">
+      <h3>Botas Veloz</h3>
+      <p>+35% velocidad</p>
+      <button id="btn-perk-speed" onclick="buyPerk('speed', 200)">
+       Comprar (200 🪙)
+      </button>
+     </div>
+     <div class="shop-item">
+      <h3>Rastreador Neón</h3>
+      <p>Flecha sobre rival</p>
+      <button id="btn-perk-tracker" onclick="buyPerk('tracker', 300)">
+       Comprar (300 🪙)
+      </button>
+     </div>
+     <div class="shop-item">
+      <h3>Cargador Ampliado</h3>
+      <p>-20% recarga armas</p>
+      <button id="btn-perk-extendedmag" onclick="buyPerk('extendedmag', 250)">
+       Comprar (250 🪙)
+      </button>
+     </div>
+     <div class="shop-item">
+      <h3>Blindaje Táctico</h3>
+      <p>+40 HP combate</p>
+      <button id="btn-perk-armor" onclick="buyPerk('armor', 400)">
+       Comprar (400 🪙)
+      </button>
+     </div>
+     <div class="shop-item">
+      <h3>Mira Láser</h3>
+      <p>-50% dispersión</p>
+      <button id="btn-perk-lasersight" onclick="buyPerk('lasersight', 350)">
+       Comprar (350 🪙)
+      </button>
+     </div>
+     <div
+      class="shop-item"
+      style="grid-column: span 3; background: #1a1a2e; border-color: #f1c40f"
+     >
+      <h3>Clases por Pieza (Info)</h3>
+      <p style="font-size: 10px">
+       Peón Mosquete+Barricada | Torre Railgun+Grappling | Caballo
+       Arco+Espada+DobleSalto | Alfil Granada+Planear | Dama Minigun+Blink | Rey
+       Espadón+Escudo+Trabuco
+      </p>
+     </div>
+    </div>
+    <div style="margin-bottom: 10px">
+     <button
+      onclick="addFreeCoins(200)"
+      style="font-size: 11px; border-color: #f1c40f; color: #f1c40f"
+     >
+      + 200 Monedas (Test)
+     </button>
+    </div>
+    <button onclick="closeShopModal()">Cerrar</button>
+   </div>
+  </div>
+
+  <!-- HUD FPS -->
+  <div id="fps-hud">
+   <div id="crosshair"></div>
+   <div
+    id="premium-banner"
+    style="
+     display: none;
+     position: absolute;
+     top: 10px;
+     left: 50%;
+     transform: translateX(-50%);
+     background: linear-gradient(135deg, #f1c40f, #e67e22);
+     color: #0b0c10;
+     padding: 4px 12px;
+     border-radius: 20px;
+     font-size: 11px;
+     font-weight: bold;
+     box-shadow: 0 0 10px rgba(241, 196, 15, 0.7);
+     z-index: 10;
+     pointer-events: none;
+    "
+   >
+    ⭐ Beneficios VIP Activos
+   </div>
+   <div id="player-hp-label" class="hp-label">Tú</div>
+   <div id="player-hp-bar" class="health-bar-container">
+    <div id="player-hp" class="hp-fill"></div>
+   </div>
+   <div id="enemy-hp-label" class="hp-label">Rival</div>
+   <div id="enemy-hp-bar" class="health-bar-container">
+    <div id="enemy-hp" class="hp-fill" style="background: #ff4757"></div>
+   </div>
+   <div id="weapon-hud">
+    <strong id="weapon-name">—</strong> <span id="weapon-stats"></span>
+   </div>
+   <div id="ability-hud"></div>
+  </div>
+
+  <script>
+   // =========================================================
+   // CONFIGURACIÓN DE FIREBASE (RÚBRICA SENA - FASE 5)
+   // =========================================================
+   const firebaseConfig = {
+    apiKey: 'AIzaSyDummyKey_ReemplazarConTuApiKey',
+    authDomain: 'fps-chess-cavirey.firebaseapp.com',
+    projectId: 'fps-chess-cavirey',
+    storageBucket: 'fps-chess-cavirey.appspot.com',
+    messagingSenderId: '174963239757',
+    appId: '1:174963239757:web:8e30b809a25b',
+   }
+
+   let db = null
+   let playerProfile = {
+    nickname: 'Invitado',
+    wins: 0,
+    matches: 0,
+    coins: 300,
+    exp: 0,
+    level: 1,
+    hasPremium: false,
+   }
+
+   try {
+    firebase.initializeApp(firebaseConfig)
+    db = firebase.firestore()
+   } catch (e) {
+    console.warn('Firestore offline/fallback local:', e.message)
+   }
+
+   function savePlayerStats() {
+    if (!db || !playerProfile.nickname || playerProfile.nickname === 'Invitado')
+     return
+    db
+     .collection('jugadores')
+     .doc(playerProfile.nickname)
+     .set(
+      {
+       nickname: playerProfile.nickname,
+       wins: playerProfile.wins,
+       matches: playerProfile.matches,
+       coins: coins,
+       exp: playerProfile.exp,
+       level: playerProfile.level,
+       lastSeen: firebase.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+     )
+     .catch(() => {})
+   }
+
+   function loadPlayerStats(nickname) {
+    playerProfile.nickname = nickname
+    document.getElementById('user-name').innerText = nickname
+    if (!db) return
+    db
+     .collection('jugadores')
+     .doc(nickname)
+     .get()
+     .then((doc) => {
+      if (doc.exists) {
+       const d = doc.data()
+       coins = d.coins || coins
+       playerProfile.wins = d.wins || 0
+       playerProfile.matches = d.matches || 0
+       playerProfile.exp = d.exp || 0
+       playerProfile.level = d.level || 1
+       updateCoinsUI()
+       updatePlayerLevelUI()
+      } else {
+       savePlayerStats()
+      }
+     })
+     .catch(() => {})
+   }
+
+   function updatePlayerLevelUI() {
+    document.getElementById('user-level').innerText = playerProfile.level
+    document.getElementById('pass-exp-text').innerText =
+     `${playerProfile.exp % 100} / 100 EXP (Nivel ${playerProfile.level})`
+   }
+
+   function addEXP(amount) {
+    playerProfile.exp += amount
+    playerProfile.level = Math.floor(playerProfile.exp / 100) + 1
+    updatePlayerLevelUI()
+    savePlayerStats()
+   }
+
+   function openRankingModal() {
+    document.getElementById('ranking-modal').style.display = 'flex'
+    const tbody = document.getElementById('ranking-tbody')
+    tbody.innerHTML =
+     '<tr><td colspan="5">Consultando clasificación...</td></tr>'
+    if (!db) {
+     tbody.innerHTML = `<tr><td>1</td><td>${playerProfile.nickname}</td><td>${playerProfile.wins}</td><td>${playerProfile.level}</td><td>${coins}</td></tr>`
+     return
+    }
+    db
+     .collection('jugadores')
+     .orderBy('wins', 'desc')
+     .limit(10)
+     .get()
+     .then((snap) => {
+      tbody.innerHTML = ''
+      let rank = 1
+      snap.forEach((doc) => {
+       const d = doc.data()
+       tbody.innerHTML += `<tr><td>${rank++}</td><td>${d.nickname}</td><td>${d.wins || 0}</td><td>${d.level || 1}</td><td>${d.coins || 0}</td></tr>`
+      })
+     })
+     .catch(() => {
+      tbody.innerHTML = `<tr><td>1</td><td>${playerProfile.nickname}</td><td>${playerProfile.wins}</td><td>${playerProfile.level}</td><td>${coins}</td></tr>`
+     })
+   }
+   function closeRankingModal() {
+    document.getElementById('ranking-modal').style.display = 'none'
+   }
+
+   function openChatModal() {
+    document.getElementById('chat-modal').style.display = 'flex'
+    listenToGlobalChat()
+   }
+   function closeChatModal() {
+    document.getElementById('chat-modal').style.display = 'none'
+   }
+
+   let chatUnsub = null
+   function listenToGlobalChat() {
+    if (!db || chatUnsub) return
+    chatUnsub = db
+     .collection('mensajes_chat')
+     .orderBy('timestamp', 'asc')
+     .limitToLast(20)
+     .onSnapshot(
+      (snap) => {
+       const box = document.getElementById('chat-messages-container')
+       box.innerHTML = ''
+       snap.forEach((doc) => {
+        const m = doc.data()
+        box.innerHTML += `<div class="chat-msg"><strong>${m.user}:</strong> ${m.text}</div>`
+       })
+       box.scrollTop = box.scrollHeight
+      },
+      () => {},
+     )
+   }
+
+   function sendChatMessage() {
+    const input = document.getElementById('chat-input')
+    const txt = input.value.trim()
+    if (!txt) return
+    input.value = ''
+    if (!db) {
+     const box = document.getElementById('chat-messages-container')
+     box.innerHTML += `<div class="chat-msg"><strong>${playerProfile.nickname}:</strong> ${txt}</div>`
+     box.scrollTop = box.scrollHeight
+     return
+    }
+    db.collection('mensajes_chat').add({
+     user: playerProfile.nickname,
+     text: txt,
+     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    })
+   }
+
+   function openBattlePassModal() {
+    document.getElementById('battlepass-modal').style.display = 'flex'
+    renderBattlePass()
+   }
+   function closeBattlePassModal() {
+    document.getElementById('battlepass-modal').style.display = 'none'
+   }
+   function renderBattlePass() {
+    const cont = document.getElementById('pass-track-container')
+    cont.innerHTML = ''
+    for (let i = 1; i <= 10; i++) {
+     const unlocked = playerProfile.level >= i
+     cont.innerHTML += `
+      <div class="pass-tier ${unlocked ? 'unlocked' : ''}">
+       <div style="font-weight:bold; color:#f1c40f;">Tier ${i}</div>
+       <div>${unlocked ? '✅ Listo' : '🔒 Bloqueado'}</div>
+       <div style="color:#66fcf1; font-size:10px;">${i * 50} 🪙</div>
+      </div>
+     `
+    }
+   }
+   function claimPassReward() {
+    const claimedCoins = playerProfile.level * 25
+    addCoins(claimedCoins)
+    playUiSound(880, 'triangle', 0.2)
+    alert(`¡Has reclamado ${claimedCoins} monedas por tu nivel actual de Pase!`)
+    closeBattlePassModal()
+   }
+
+   let currentCampaignMission = 1
+   const CAMPAIGN_MISSIONS = {
+    1: {
+     title: 'Misión 1: Despertar en la Habitación',
+     dialog:
+      "<strong>Sargento Peón:</strong> '¡Alerta roja! Las tropas oscuras intentan tomar la mesa de juegos. Neutraliza su avanzada.'",
+     obj: 'Objetivo: Captura una pieza y vence el duelo shooter.',
+     diff: 'easy',
+    },
+    2: {
+     title: 'Misión 2: El Nudo Táctico',
+     dialog:
+      "<strong>Torre Blindada:</strong> 'La artillería enemiga está en posición. Utiliza las piezas gigantes como cobertura y flanquea.'",
+     obj: 'Objetivo: Sobrevive y derrota a la IA táctica (1600 Elo).',
+     diff: 'normal',
+    },
+    3: {
+     title: 'Misión 3: El Jaque Final del Rey',
+     dialog:
+      "<strong>Reina Estratega:</strong> 'El Rey rival está desprotegido. Si su Rey cae en combate, la victoria será absoluta.'",
+     obj: 'Objetivo: Elimina al Rey rival o dale Jaque Mate definitivo.',
+     diff: 'hard',
+    },
+   }
+
+   function startCampaignMission(num) {
+    document.getElementById('lobby-menu').style.display = 'none'
+    const m = CAMPAIGN_MISSIONS[num] || CAMPAIGN_MISSIONS[1]
+    document.getElementById('mission-title').innerText = m.title
+    document.getElementById('mission-dialog').innerHTML = m.dialog
+    document.getElementById('mission-objective').innerText = m.obj
+    document.getElementById('campaign-modal').style.display = 'flex'
+   }
+   function closeCampaignModal() {
+    document.getElementById('campaign-modal').style.display = 'none'
+    document.getElementById('lobby-menu').style.display = 'flex'
+   }
+   function launchMissionGame() {
+    document.getElementById('campaign-modal').style.display = 'none'
+    botDifficulty = CAMPAIGN_MISSIONS[currentCampaignMission].diff
+    playerColor = 'w'
+    gameMode = 'local'
+    gameState = 'CHESS'
+    initChessEngine()
+    syncGiantPiecesToArena()
+    updateTurnBanner()
+   }
+
+   function loginWithNickname() {
+    const val = document.getElementById('nickname-input').value.trim()
+    if (!val) {
+     alert('Ingresa un nickname válido.')
+     return
+    }
+    loadPlayerStats(val)
+    startAfterLogin()
+   }
+
+   // =========================================================
+   // 1. ECONOMÍA & PERKS
+   // =========================================================
+   let coins = 300
+   let ownedItems = { perks: [] }
+   let hasPremium = false
+
+   function updateCoinsUI() {
+    document.getElementById('coin-count').innerText = coins
+   }
+   function addCoins(a) {
+    coins += a
+    updateCoinsUI()
+    savePlayerStats()
+   }
+   function addFreeCoins(a) {
+    addCoins(a)
+    playUiSound(650, 'sine', 0.1)
+    updateShopButtons()
+   }
+   function openShopModal() {
+    playUiSound(500, 'sine', 0.08)
+    updateShopButtons()
+    document.getElementById('shop-modal').style.display = 'flex'
+   }
+   function closeShopModal() {
+    playUiSound(400, 'sine', 0.08)
+    document.getElementById('shop-modal').style.display = 'none'
+   }
+   function updateShopButtons() {
+    let b = document.getElementById('btn-perk-speed')
+    b.innerText = ownedItems.perks.includes('speed')
+     ? 'Activo ✔'
+     : 'Comprar (200 🪙)'
+    b.disabled = ownedItems.perks.includes('speed')
+
+    let t = document.getElementById('btn-perk-tracker')
+    t.innerText = ownedItems.perks.includes('tracker')
+     ? 'Activo ✔'
+     : 'Comprar (300 🪙)'
+    t.disabled = ownedItems.perks.includes('tracker')
+
+    let em = document.getElementById('btn-perk-extendedmag')
+    em.innerText = ownedItems.perks.includes('extendedmag')
+     ? 'Activo ✔'
+     : 'Comprar (250 🪙)'
+    em.disabled = ownedItems.perks.includes('extendedmag')
+
+    let ar = document.getElementById('btn-perk-armor')
+    ar.innerText = ownedItems.perks.includes('armor')
+     ? 'Activo ✔'
+     : 'Comprar (400 🪙)'
+    ar.disabled = ownedItems.perks.includes('armor')
+
+    let ls = document.getElementById('btn-perk-lasersight')
+    ls.innerText = ownedItems.perks.includes('lasersight')
+     ? 'Activo ✔'
+     : 'Comprar (350 🪙)'
+    ls.disabled = ownedItems.perks.includes('lasersight')
+
+    if (trackerArrow)
+     trackerArrow.visible = ownedItems.perks.includes('tracker')
+   }
+   function buyPerk(k, price) {
+    if (coins >= price && !ownedItems.perks.includes(k)) {
+     coins -= price
+     ownedItems.perks.push(k)
+     updateCoinsUI()
+     playUiSound(880, 'triangle', 0.2)
+     if (k === 'speed') playerStats.speed = (playerStats.baseSpeed || 18) * 1.35
+     if (k === 'tracker' && trackerArrow) trackerArrow.visible = true
+     updateShopButtons()
+     savePlayerStats()
+    } else if (coins < price) alert('¡Monedas insuficientes!')
+   }
+   function buyPremium() {
+    playUiSound(880, 'triangle', 0.3)
+    hasPremium = true
+    playerProfile.hasPremium = true
+    alert(
+     '¡Membresía VIP activada! ⭐\n\nBeneficios:\n• +20% velocidad en combate\n• +15% daño en combate\n• Banner exclusivo en HUD',
+    )
+    const btn = event.target
+    btn.innerText = '✅ VIP Activo'
+    btn.disabled = true
+    btn.style.background = '#2ed573'
+   }
+
+   // =========================================================
+   // 2. AUDIO (Web Audio API)
+   // =========================================================
+   let audioCtx = null
+   function getAudioContext() {
+    if (!audioCtx)
+     audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    if (audioCtx.state === 'suspended') audioCtx.resume()
+    return audioCtx
+   }
+   function playUiSound(freq = 440, type = 'sine', dur = 0.08) {
+    try {
+     const ctx = getAudioContext()
+     const o = ctx.createOscillator(),
+      g = ctx.createGain()
+     o.type = type
+     o.frequency.setValueAtTime(freq, ctx.currentTime)
+     g.gain.setValueAtTime(0.12, ctx.currentTime)
+     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur)
+     o.connect(g)
+     g.connect(ctx.destination)
+     o.start()
+     o.stop(ctx.currentTime + dur)
+    } catch (e) {}
+   }
+   function playWeaponSound(weapon) {
+    try {
+     const ctx = getAudioContext()
+     const t = ctx.currentTime
+     if (weapon === 'musket') {
+      const o = ctx.createOscillator(),
+       g = ctx.createGain(),
+       n = ctx.createBufferSource(),
+       ng = ctx.createGain()
+      o.type = 'square'
+      o.frequency.setValueAtTime(180, t)
+      o.frequency.exponentialRampToValueAtTime(22, t + 0.28)
+      g.gain.setValueAtTime(0.32, t)
+      g.gain.exponentialRampToValueAtTime(0.01, t + 0.32)
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.start(t)
+      o.stop(t + 0.32)
+      const buf = ctx.createBuffer(1, ctx.sampleRate * 0.12, ctx.sampleRate)
+      const d = buf.getChannelData(0)
+      for (let i = 0; i < d.length; i++)
+       d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 2)
+      n.buffer = buf
+      ng.gain.setValueAtTime(0.18, t)
+      ng.gain.linearRampToValueAtTime(0, t + 0.12)
+      n.connect(ng)
+      ng.connect(ctx.destination)
+      n.start(t)
+     } else if (weapon === 'railgun') {
+      const o = ctx.createOscillator(),
+       g = ctx.createGain()
+      o.type = 'sine'
+      o.frequency.setValueAtTime(1150, t)
+      o.frequency.exponentialRampToValueAtTime(55, t + 0.45)
+      g.gain.setValueAtTime(0.45, t)
+      g.gain.linearRampToValueAtTime(0.01, t + 0.45)
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.start(t)
+      o.stop(t + 0.45)
+     } else if (weapon === 'bow') {
+      const o = ctx.createOscillator(),
+       g = ctx.createGain()
+      o.type = 'triangle'
+      o.frequency.setValueAtTime(520, t)
+      o.frequency.linearRampToValueAtTime(180, t + 0.14)
+      g.gain.setValueAtTime(0.2, t)
+      g.gain.exponentialRampToValueAtTime(0.01, t + 0.16)
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.start(t)
+      o.stop(t + 0.16)
+     } else if (weapon === 'espadon') {
+      const o = ctx.createOscillator(),
+       g = ctx.createGain()
+      o.type = 'sawtooth'
+      o.frequency.setValueAtTime(110, t)
+      o.frequency.exponentialRampToValueAtTime(42, t + 0.18)
+      g.gain.setValueAtTime(0.38, t)
+      g.gain.exponentialRampToValueAtTime(0.01, t + 0.22)
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.start(t)
+      o.stop(t + 0.22)
+     } else if (weapon === 'minigun') {
+      const o = ctx.createOscillator(),
+       g = ctx.createGain()
+      o.type = 'square'
+      o.frequency.setValueAtTime(880, t)
+      g.gain.setValueAtTime(0.14, t)
+      g.gain.exponentialRampToValueAtTime(0.01, t + 0.07)
+      o.connect(g)
+      g.connect(ctx.destination)
+      o.start(t)
+      o.stop(t + 0.07)
+     }
+    } catch (e) {}
+   }
+   function handleMenuClick(action) {
+    playUiSound(587.33, 'triangle', 0.1)
+    action()
+   }
+
+   // =========================================================
+   // 3. CINEMÁTICAS (PRESERVADAS EXACTAS)
+   // =========================================================
+   const CINEMATIC_VIDEOS = {
+    intro: 'videos/intro.mp4',
+    captureTransition: 'videos/transition.mp4',
+    combatVictory: 'videos/victory.mp4',
+   }
+   let onCinematicEndCallback = null
+   function playCinematic(src, cb) {
+    const c = document.getElementById('cinematic-container'),
+     v = document.getElementById('cinematic-video')
+    onCinematicEndCallback = cb
+    v.pause()
+    v.removeAttribute('src')
+    v.load()
+    v.src = src
+    v.muted = true
+    c.style.display = 'block'
+    let done = false
+    const end = () => {
+     if (!done) {
+      done = true
+      skipCinematic()
+     }
+    }
+    v.onended = end
+    v.onerror = () => end()
+    const p = v.play()
+    if (p !== undefined) p.catch(() => end())
+    setTimeout(() => {
+     if (v.readyState === 0 && !done) {
+      v.src = src + '.mp4'
+      v.play().catch(() => end())
+     }
+    }, 1200)
+   }
+   function skipCinematic() {
+    const c = document.getElementById('cinematic-container'),
+     v = document.getElementById('cinematic-video')
+    v.pause()
+    c.style.display = 'none'
+    if (onCinematicEndCallback) {
+     const cb = onCinematicEndCallback
+     onCinematicEndCallback = null
+     cb()
+    }
+   }
+
+   // =========================================================
+   // 4. GOOGLE AUTH (CLIENT ID PRESERVADO EXACTO)
+   // =========================================================
+   const GOOGLE_CLIENT_ID =
+    '174963239757-tcjjtqdqr32e5la6vm6gje3bvjs3g332.apps.googleusercontent.com'
+   function initGoogleAuth() {
+    if (typeof google === 'undefined') {
+     setTimeout(initGoogleAuth, 250)
+     return
+    }
+    google.accounts.id.initialize({
+     client_id: GOOGLE_CLIENT_ID,
+     callback: handleGoogleCredentialResponse,
+    })
+    google.accounts.id.renderButton(
+     document.getElementById('google-btn-container'),
+     { theme: 'filled_blue', size: 'large', shape: 'pill' },
+    )
+   }
+   function parseJwt(token) {
+    try {
+     const b64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+     const json = decodeURIComponent(
+      atob(b64)
+       .split('')
+       .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+       .join(''),
+     )
+     return JSON.parse(json)
+    } catch (e) {
+     return null
+    }
+   }
+   function handleGoogleCredentialResponse(r) {
+    const d = parseJwt(r.credential)
+    if (d) {
+     const nick = d.given_name || d.name
+     document.getElementById('user-name').innerText = nick
+     if (d.picture) document.getElementById('user-avatar').src = d.picture
+     document.getElementById('user-badge').style.display = 'flex'
+     loadPlayerStats(nick)
+    }
+    startAfterLogin()
+   }
+   function bypassAuth() {
+    loadPlayerStats('Invitado')
+    document.getElementById('user-avatar').src =
+     'https://ui-avatars.com/api/?name=Guest&background=45a29e&color=fff'
+    document.getElementById('user-badge').style.display = 'flex'
+    startAfterLogin()
+   }
+   function startAfterLogin() {
+    document.getElementById('auth-menu').style.display = 'none'
+    playCinematic(CINEMATIC_VIDEOS.intro, () => {
+     document.getElementById('lobby-menu').style.display = 'flex'
+    })
+   }
+
+   // =========================================================
+   // 5. MULTIJUGADOR P2P PEERJS (PRESERVADO)
+   // =========================================================
+   let gameMode = null,
+    isHost = false,
+    peer = null,
+    conn = null,
+    roomId = null,
+    remoteColor = null
+   function setNetStatus(txt, ok = false) {
+    document.getElementById('net-text').innerText = txt
+    document.getElementById('net-dot').className =
+     'status-dot' + (ok ? ' ok' : '')
+   }
+   function genRoomId(n = 5) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    let s = ''
+    for (let i = 0; i < n; i++)
+     s += chars[Math.floor(Math.random() * chars.length)]
+    return s
+   }
+   function chooseLocalMode() {
+    document.getElementById('lobby-menu').style.display = 'none'
+    gameMode = 'local'
+    setNetStatus('Local vs Bot', true)
+    document.getElementById('diff-menu').style.display = 'flex'
+   }
+   function showHostSetup() {
+    document.getElementById('lobby-menu').style.display = 'none'
+    document.getElementById('host-setup').style.display = 'flex'
+   }
+   function backToLobby() {
+    document.getElementById('host-setup').style.display = 'none'
+    document.getElementById('lobby-menu').style.display = 'flex'
+    if (peer) {
+     try {
+      peer.destroy()
+     } catch (e) {}
+     peer = null
+    }
+    roomId = null
+    isHost = false
+   }
+   function createHost(color) {
+    playerColor = color
+    remoteColor = color === 'w' ? 'b' : 'w'
+    isHost = true
+    gameMode = 'p2p'
+    document.getElementById('host-color-choices').style.display = 'none'
+    const code = genRoomId()
+    roomId = code
+    document.getElementById('host-code-display').innerText = code
+    document.getElementById('host-code-area').style.display = 'block'
+    document.getElementById('host-wait').innerText = 'Generando sala...'
+    try {
+     peer = new Peer(code)
+     peer.on('open', (id) => {
+      roomId = id
+      document.getElementById('host-code-display').innerText = id
+      document.getElementById('host-wait').innerText =
+       'Código listo — comparte con rival'
+      setNetStatus('Host ' + id, true)
+     })
+     peer.on('connection', (c) => {
+      conn = c
+      setupConnection(true)
+     })
+     peer.on('error', () => {
+      setNetStatus('Error Host', false)
+     })
+    } catch (e) {}
+   }
+   function joinRoom() {
+    const input = document.getElementById('join-code-input')
+    let code = input.value
+     .trim()
+     .toUpperCase()
+     .replace(/[^A-Z0-9]/g, '')
+    if (code.length !== 5) {
+     document.getElementById('lobby-error').innerText =
+      'El código debe tener 5 caracteres'
+     return
+    }
+    document.getElementById('lobby-error').innerText = ''
+    document.getElementById('lobby-menu').style.display = 'none'
+    gameMode = 'p2p'
+    isHost = false
+    roomId = code
+    document.getElementById('host-setup').style.display = 'flex'
+    document.getElementById('host-color-choices').style.display = 'none'
+    document.getElementById('host-code-area').style.display = 'block'
+    document.getElementById('host-code-display').innerText = code
+    try {
+     peer = new Peer()
+     peer.on('open', () => {
+      conn = peer.connect(code, { reliable: true, serialization: 'json' })
+      setupConnection(false)
+     })
+    } catch (e) {}
+   }
+   function setupConnection(asHost) {
+    if (!conn) return
+    conn.on('open', () => {
+     setNetStatus('P2P Conectado', true)
+     if (asHost) {
+      if (!chess) initChessEngine()
+      sendData({ t: 'init', fen: chess.fen(), hostColor: playerColor })
+      setTimeout(() => startP2PGameAsHost(), 600)
+     }
+    })
+    conn.on('data', handleNetData)
+   }
+   function sendData(obj) {
+    if (conn && conn.open) {
+     try {
+      conn.send(obj)
+     } catch (e) {}
+    }
+   }
+   function handleNetData(data) {
+    if (!data || !data.t) return
+    if (data.t === 'init') {
+     playerColor = data.hostColor === 'w' ? 'b' : 'w'
+     if (!chess) initChessEngine(data.fen)
+     else {
+      chess.load(data.fen)
+      renderFromChess()
+     }
+     document.getElementById('host-setup').style.display = 'none'
+     startP2PGameAsClient()
+    } else if (data.t === 'move') {
+     if (data.fen && chess.fen() !== data.fen) {
+      chess.load(data.fen)
+      renderFromChess(true)
+     }
+     currentTurn = chess.turn()
+     updateTurnBanner()
+     checkGameOverByChess()
+    } else if (data.t === 'captureCombat') {
+     triggerCombatSync(data)
+    }
+   }
+
+   // =========================================================
+   // 6. MOTOR AJEDREZ CHESS.JS (PRESERVADO)
+   // =========================================================
+   let chess = null,
+    boardState = [],
+    selectedSquare = null,
+    pendingPromotion = null
+   function initChessEngine(initialFen) {
+    chess = new Chess(initialFen)
+    renderFromChess()
+    currentTurn = chess.turn()
+   }
+   function alg(row, col) {
+    return String.fromCharCode(97 + col) + (8 - row)
+   }
+   function rcFromAlg(s) {
+    return { row: 8 - parseInt(s[1]), col: s.charCodeAt(0) - 97 }
+   }
+   function clearBoardPieces() {
+    for (let r = 0; r < 8; r++)
+     for (let c = 0; c < 8; c++)
+      if (boardState[r] && boardState[r][c]?.mesh)
+       boardGroup.remove(boardState[r][c].mesh)
+   }
+   function renderFromChess(skipAnim) {
+    clearBoardPieces()
+    for (let r = 0; r < 8; r++) boardState[r] = []
+    const bd = chess.board()
+    for (let r = 0; r < 8; r++) {
+     for (let c = 0; c < 8; c++) {
+      const p = bd[r][c]
+      if (p) {
+       const mesh = buildPieceMesh(p.type, p.color)
+       mesh.position.set((c - 3.5) * 1.6, 0.15, (r - 3.5) * 1.6)
+       mesh.userData = {
+        row: r,
+        col: c,
+        type: p.type,
+        color: p.color,
+        isPiece: true,
+       }
+       boardGroup.add(mesh)
+       boardState[r][c] = { type: p.type, color: p.color, mesh }
+      } else boardState[r][c] = null
+     }
+    }
+    if (playerColor === 'b') {
+     chessCamera.position.set(0, 16, -14)
+     chessCamera.lookAt(0, 0, 0)
+    } else {
+     chessCamera.position.set(0, 16, 14)
+     chessCamera.lookAt(0, 0, 0)
+    }
+    if (!skipAnim) syncGiantPiecesToArena()
+   }
+   function tryApplyChessMove(fromAlg, toAlg, promotion, isLocal) {
+    const move = chess.move({
+     from: fromAlg,
+     to: toAlg,
+     promotion: promotion || 'q',
+    })
+    if (!move) return null
+    renderFromChess()
+    currentTurn = chess.turn()
+    if (gameMode === 'p2p' && isLocal)
+     sendData({
+      t: 'move',
+      fen: chess.fen(),
+      from: fromAlg,
+      to: toAlg,
+      promotion,
+     })
+    updateTurnBanner()
+    checkGameOverByChess()
+    return move
+   }
+   function checkGameOverByChess() {
+    if (!chess) return false
+    if (chess.in_checkmate()) {
+     const winner = chess.turn() === 'w' ? 'Negras' : 'Blancas'
+     const playerWon = chess.turn() !== playerColor
+     showGameOver(
+      '¡JAQUE MATE!',
+      'Gana ' + winner,
+      playerWon ? playerColor : 'rival',
+     )
+     if (playerWon) {
+      playerProfile.wins++
+      addEXP(50)
+     }
+     playerProfile.matches++
+     savePlayerStats()
+     return true
+    }
+    return false
+   }
+   function showGameOver(title, sub, winnerColor) {
+    gameState = 'GAMEOVER'
+    document.getElementById('gameover-title').innerText = title
+    document.getElementById('gameover-sub').innerText = sub
+    const rw = document.getElementById('gameover-reward')
+    if (winnerColor === playerColor) {
+     rw.innerText = '+100 🪙 & +50 EXP'
+     addCoins(100)
+     addEXP(50)
+     playerProfile.wins++
+    } else {
+     rw.innerText = 'Derrota — Sigue entrenando'
+    }
+    playerProfile.matches++
+    savePlayerStats()
+    document.getElementById('gameover-modal').style.display = 'flex'
+    document.exitPointerLock && document.exitPointerLock()
+    document.getElementById('fps-hud').style.display = 'none'
+   }
+   function resetToLobby() {
+    document.getElementById('gameover-modal').style.display = 'none'
+    document.getElementById('lobby-menu').style.display = 'flex'
+    gameState = 'MENU'
+    if (chess) chess.reset()
+    clearBoardPieces()
+    if (peer) {
+     try {
+      peer.destroy()
+     } catch (e) {}
+     peer = null
+     conn = null
+    }
+   }
+   function showPromotionModal(fromAlg, toAlg, fromR, fromC, toR, toC) {
+    pendingPromotion = { from: fromAlg, to: toAlg, fromR, fromC, toR, toC }
+    document.getElementById('promotion-modal').style.display = 'flex'
+    gameState = 'PROMOTION'
+   }
+   function resolvePromotion(piece) {
+    if (!pendingPromotion) return
+    const { from, to } = pendingPromotion
+    document.getElementById('promotion-modal').style.display = 'none'
+    pendingPromotion = null
+    tryApplyChessMove(from, to, piece, true)
+    gameState = 'CHESS'
+   }
+
+   // =========================================================
+   // 7. MODELOS 3D EXACTOS (INTACTOS AL 100%)
+   // =========================================================
+   function buildPieceMesh(type, color) {
+    const group = new THREE.Group()
+    const mat = new THREE.MeshStandardMaterial({
+     color: color === 'w' ? 0xeaeaea : 0x1a1a1a,
+     metalness: 0.15,
+     roughness: 0.35,
+    })
+
+    const basePoints = [
+     new THREE.Vector2(0, 0),
+     new THREE.Vector2(0.55, 0),
+     new THREE.Vector2(0.52, 0.1),
+     new THREE.Vector2(0.46, 0.16),
+     new THREE.Vector2(0.48, 0.22),
+     new THREE.Vector2(0.4, 0.3),
+     new THREE.Vector2(0.32, 0.45),
+    ]
+    const baseGeom = new THREE.LatheGeometry(basePoints, 24)
+    const baseMesh = new THREE.Mesh(baseGeom, mat)
+    baseMesh.castShadow = true
+    group.add(baseMesh)
+
+    if (type === 'p') {
+     const bodyPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.24, 0.75),
+      new THREE.Vector2(0.18, 0.95),
+      new THREE.Vector2(0.26, 1.0),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(bodyPoints, 20), mat))
+     const head = new THREE.Mesh(new THREE.SphereGeometry(0.24, 18, 18), mat)
+     head.position.y = 1.18
+     head.castShadow = true
+     group.add(head)
+    } else if (type === 'r') {
+     const towerPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.28, 1.05),
+      new THREE.Vector2(0.38, 1.12),
+      new THREE.Vector2(0.38, 1.35),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(towerPoints, 20), mat))
+     for (let i = 0; i < 4; i++) {
+      const merlon = new THREE.Mesh(
+       new THREE.BoxGeometry(0.12, 0.16, 0.12),
+       mat,
+      )
+      const angle = (i * Math.PI) / 2
+      merlon.position.set(Math.cos(angle) * 0.3, 1.42, Math.sin(angle) * 0.3)
+      group.add(merlon)
+     }
+    } else if (type === 'n') {
+     const neckPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.28, 0.65),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(neckPoints, 16), mat))
+
+     const knightShape = new THREE.Shape()
+     knightShape.moveTo(0, 0)
+     knightShape.lineTo(0.25, 0)
+     knightShape.quadraticCurveTo(0.38, 0.35, 0.28, 0.65)
+     knightShape.lineTo(0.48, 0.55)
+     knightShape.lineTo(0.46, 0.75)
+     knightShape.lineTo(0.25, 0.95)
+     knightShape.lineTo(0.22, 1.08)
+     knightShape.lineTo(0.12, 0.98)
+     knightShape.quadraticCurveTo(-0.05, 0.65, -0.15, 0)
+     knightShape.closePath()
+
+     const headGeom = new THREE.ExtrudeGeometry(knightShape, {
+      depth: 0.24,
+      bevelEnabled: true,
+      bevelSegments: 3,
+      steps: 1,
+      bevelSize: 0.04,
+      bevelThickness: 0.04,
+     })
+     headGeom.center()
+     const headMesh = new THREE.Mesh(headGeom, mat)
+     headMesh.position.set(0, 1.05, 0)
+     headMesh.scale.set(0.9, 0.9, 0.9)
+     headMesh.castShadow = true
+     group.add(headMesh)
+    } else if (type === 'b') {
+     const bishopPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.22, 0.95),
+      new THREE.Vector2(0.28, 1.05),
+      new THREE.Vector2(0.22, 1.4),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(bishopPoints, 20), mat))
+     const ball = new THREE.Mesh(new THREE.SphereGeometry(0.08, 12, 12), mat)
+     ball.position.y = 1.5
+     group.add(ball)
+    } else if (type === 'q') {
+     const queenPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.22, 1.1),
+      new THREE.Vector2(0.38, 1.45),
+      new THREE.Vector2(0.28, 1.55),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(queenPoints, 22), mat))
+     const crown = new THREE.Mesh(new THREE.SphereGeometry(0.12, 14, 14), mat)
+     crown.position.y = 1.68
+     group.add(crown)
+    } else if (type === 'k') {
+     const kingPoints = [
+      new THREE.Vector2(0.32, 0.45),
+      new THREE.Vector2(0.24, 1.2),
+      new THREE.Vector2(0.36, 1.55),
+     ]
+     group.add(new THREE.Mesh(new THREE.LatheGeometry(kingPoints, 22), mat))
+     const vCross = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.28, 0.08), mat)
+     vCross.position.y = 1.75
+     const hCross = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.08, 0.08), mat)
+     hCross.position.y = 1.78
+     group.add(vCross, hCross)
+    }
+
+    group.userData = { type, color }
+    return group
+   }
+
+   // =========================================================
+   // 8. ESCENARIO TOY STORY & MOTOR THREE.JS
+   // =========================================================
+   let scene, renderer, chessCamera, fpsCamera
+   let gameState = 'MENU',
+    botDifficulty = 'normal',
+    playerColor = 'w',
+    currentTurn = 'w'
+   let boardGroup = new THREE.Group(),
+    arenaToyRoomGroup = new THREE.Group(),
+    arenaPiecesHolder = new THREE.Group()
+   let raycaster = new THREE.Raycaster(),
+    mouse = new THREE.Vector2()
+   let playerObj,
+    enemyCombatHolder,
+    trackerArrow = null
+   let playerStats = { hp: 100, maxHp: 100, speed: 18, baseSpeed: 18 }
+   let enemyStats = { hp: 100, maxHp: 100, speed: 10, fireCooldown: 0 }
+   let combatPendingCapture = null,
+    arenaObstacles = []
+   let moveForward = false,
+    moveBackward = false,
+    moveLeft = false,
+    moveRight = false,
+    canJump = false
+   let velocity = new THREE.Vector3(),
+    isAiming = false,
+    pitch = 0,
+    yaw = 0
+   const TABLE_Y = 16
+   let currentCombatConfig = null
+
+   function init() {
+    const container = document.getElementById('canvas-container')
+    renderer = new THREE.WebGLRenderer({ antialias: true })
+    renderer.setSize(window.innerWidth, window.innerHeight)
+    renderer.shadowMap.enabled = true
+    container.appendChild(renderer.domElement)
+
+    scene = new THREE.Scene()
+    scene.background = new THREE.Color(0x0a0c12)
+    scene.add(new THREE.AmbientLight(0xfff7e6, 0.7))
+    const sun = new THREE.DirectionalLight(0xffffff, 0.85)
+    sun.position.set(50, 70, 40)
+    sun.castShadow = true
+    scene.add(sun)
+
+    chessCamera = new THREE.PerspectiveCamera(
+     45,
+     window.innerWidth / window.innerHeight,
+     0.1,
+     1000,
+    )
+    chessCamera.position.set(0, 16, 14)
+    chessCamera.lookAt(0, 0, 0)
+
+    fpsCamera = new THREE.PerspectiveCamera(
+     70,
+     window.innerWidth / window.innerHeight,
+     0.1,
+     800,
+    )
+
+    buildChessBoard()
+    buildToyStoryRoomArena()
+    scene.add(boardGroup)
+    scene.add(arenaToyRoomGroup)
+
+    setupEvents()
+    initGoogleAuth()
+    initChessEngine()
+    animate()
+   }
+
+   function buildChessBoard() {
+    for (let r = 0; r < 8; r++) {
+     boardState[r] = []
+     for (let c = 0; c < 8; c++) {
+      const isWhite = (r + c) % 2 === 0
+      const tile = new THREE.Mesh(
+       new THREE.BoxGeometry(1.6, 0.3, 1.6),
+       new THREE.MeshLambertMaterial({ color: isWhite ? 0xcccccc : 0x1f2833 }),
+      )
+      tile.position.set((c - 3.5) * 1.6, 0, (r - 3.5) * 1.6)
+      tile.receiveShadow = true
+      tile.userData = { row: r, col: c, isTile: true }
+      boardGroup.add(tile)
+     }
+    }
+   }
+
+   function buildToyStoryRoomArena() {
+    arenaToyRoomGroup.position.set(600, 0, 0)
+
+    const roomFloor = new THREE.Mesh(
+     new THREE.PlaneGeometry(240, 240),
+     new THREE.MeshStandardMaterial({ color: 0x965628, roughness: 0.6 }),
+    )
+    roomFloor.rotation.x = -Math.PI / 2
+    roomFloor.receiveShadow = true
+    arenaToyRoomGroup.add(roomFloor)
+
+    const ceiling = new THREE.Mesh(
+     new THREE.PlaneGeometry(240, 240),
+     new THREE.MeshStandardMaterial({ color: 0xffffff }),
+    )
+    ceiling.position.y = 80
+    ceiling.rotation.x = Math.PI / 2
+    arenaToyRoomGroup.add(ceiling)
+
+    const lamp = new THREE.Mesh(
+     new THREE.ConeGeometry(8, 6, 16),
+     new THREE.MeshStandardMaterial({
+      color: 0xf1c40f,
+      emissive: 0xffeaa7,
+      emissiveIntensity: 0.6,
+     }),
+    )
+    lamp.position.set(0, 75, 0)
+    arenaToyRoomGroup.add(lamp)
+
+    const lampLight = new THREE.PointLight(0xfff1cf, 1.2, 160)
+    lampLight.position.set(0, 70, 0)
+    arenaToyRoomGroup.add(lampLight)
+
+    const wallMat = new THREE.MeshStandardMaterial({
+     color: 0x54a0ff,
+     roughness: 0.8,
+    })
+    const wallGeom = new THREE.BoxGeometry(240, 80, 2)
+    const w1 = new THREE.Mesh(wallGeom, wallMat)
+    w1.position.set(0, 40, -120)
+    const w2 = new THREE.Mesh(wallGeom, wallMat)
+    w2.position.set(0, 40, 120)
+    const w3 = new THREE.Mesh(wallGeom, wallMat)
+    w3.position.set(-120, 40, 0)
+    w3.rotation.y = Math.PI / 2
+    const w4 = new THREE.Mesh(wallGeom, wallMat)
+    w4.position.set(120, 40, 0)
+    w4.rotation.y = Math.PI / 2
+    arenaToyRoomGroup.add(w1, w2, w3, w4)
+
+    const tableTop = new THREE.Mesh(
+     new THREE.BoxGeometry(130, 2.5, 130),
+     new THREE.MeshStandardMaterial({ color: 0x6e3c15 }),
+    )
+    tableTop.position.set(0, TABLE_Y, 0)
+    tableTop.receiveShadow = true
+    arenaToyRoomGroup.add(tableTop)
+
+    const legGeom = new THREE.BoxGeometry(8, TABLE_Y, 8)
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x502b0e })
+    const legs = [
+     [58, 58],
+     [-58, 58],
+     [58, -58],
+     [-58, -58],
+    ]
+    legs.forEach(([x, z]) => {
+     const p = new THREE.Mesh(legGeom, legMat)
+     p.position.set(x, TABLE_Y / 2, z)
+     arenaToyRoomGroup.add(p)
+    })
+
+    const boardScale = 11
+    for (let r = 0; r < 8; r++) {
+     for (let c = 0; c < 8; c++) {
+      const isWhite = (r + c) % 2 === 0
+      const tile = new THREE.Mesh(
+       new THREE.BoxGeometry(boardScale, 1.2, boardScale),
+       new THREE.MeshLambertMaterial({ color: isWhite ? 0xf0d9b5 : 0xb58863 }),
+      )
+      tile.position.set(
+       (c - 3.5) * boardScale,
+       TABLE_Y + 1.5,
+       (r - 3.5) * boardScale,
+      )
+      tile.receiveShadow = true
+      arenaToyRoomGroup.add(tile)
+     }
+    }
+
+    arenaToyRoomGroup.add(arenaPiecesHolder)
+
+    playerObj = new THREE.Object3D()
+    playerObj.position.set(600, TABLE_Y + 4, 40)
+    scene.add(playerObj)
+
+    enemyCombatHolder = new THREE.Group()
+    enemyCombatHolder.position.set(600, TABLE_Y + 2, -40)
+    scene.add(enemyCombatHolder)
+
+    const arrowGeom = new THREE.ConeGeometry(1.4, 2.8, 4)
+    arrowGeom.rotateX(Math.PI)
+    trackerArrow = new THREE.Mesh(
+     arrowGeom,
+     new THREE.MeshBasicMaterial({
+      color: 0x00ffcc,
+      wireframe: true,
+      depthTest: false,
+     }),
+    )
+    trackerArrow.position.set(0, 14, 0)
+    trackerArrow.visible = false
+    enemyCombatHolder.add(trackerArrow)
+   }
+
+   function syncGiantPiecesToArena() {
+    while (arenaPiecesHolder.children.length > 0)
+     arenaPiecesHolder.remove(arenaPiecesHolder.children[0])
+    const boardScale = 11
+    for (let r = 0; r < 8; r++) {
+     for (let c = 0; c < 8; c++) {
+      const pd = boardState[r][c]
+      if (pd) {
+       const gp = buildPieceMesh(pd.type, pd.color)
+       gp.scale.set(6.8, 6.8, 6.8)
+       gp.position.set(
+        (c - 3.5) * boardScale,
+        TABLE_Y + 2,
+        (r - 3.5) * boardScale,
+       )
+       gp.userData = { isGiant: true }
+       arenaPiecesHolder.add(gp)
+      }
+     }
+    }
+    rebuildArenaObstacles()
+   }
+
+   function rebuildArenaObstacles() {
+    arenaObstacles = []
+    arenaPiecesHolder.children.forEach((m) => {
+     const box = new THREE.Box3().setFromObject(m, true)
+     box.expandByScalar(0.5)
+     arenaObstacles.push({ mesh: m, box })
+    })
+   }
+
+   function checkCollisionPlayer(nextPos) {
+    const playerBox = new THREE.Box3().setFromCenterAndSize(
+     nextPos,
+     new THREE.Vector3(1.8, 3.6, 1.8),
+    )
+    for (let obs of arenaObstacles) {
+     if (obs.box.intersectsBox(playerBox)) return true
+    }
+    return false
+   }
+
+   function selectDifficulty(diff) {
+    botDifficulty = diff
+    document.getElementById('diff-menu').style.display = 'none'
+    document.getElementById('color-menu').style.display = 'flex'
+   }
+   function selectColor(color) {
+    playerColor = color
+    document.getElementById('color-menu').style.display = 'none'
+    gameState = 'CHESS'
+    initChessEngine()
+    syncGiantPiecesToArena()
+    updateTurnBanner()
+    if (playerColor === 'b') setTimeout(botPlayChessJs, 900)
+   }
+   function startP2PGameAsHost() {
+    document.getElementById('host-setup').style.display = 'none'
+    gameState = 'CHESS'
+    initChessEngine()
+    syncGiantPiecesToArena()
+    updateTurnBanner()
+   }
+   function startP2PGameAsClient() {
+    gameState = 'CHESS'
+    syncGiantPiecesToArena()
+    updateTurnBanner()
+   }
+   function updateTurnBanner() {
+    const isPlayerTurn = chess.turn() === playerColor
+    document.getElementById('info-banner').innerText = isPlayerTurn
+     ? 'TU TURNO — Mueve una pieza'
+     : 'Turno del rival...'
+   }
+
+   // =========================================================
+   // 9. EVENTOS AJEDREZ & CLICK
+   // =========================================================
+   function onChessClick(event) {
+    if (gameState !== 'CHESS' || chess.turn() !== playerColor) return
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
+    raycaster.setFromCamera(mouse, chessCamera)
+    const intersects = raycaster.intersectObjects(boardGroup.children, true)
+    if (intersects.length === 0) return
+
+    let cur = intersects[0].object
+    while (cur && !cur.userData.isTile && !cur.userData.isPiece)
+     cur = cur.parent
+    if (!cur || cur.userData.row === undefined) return
+
+    const row = cur.userData.row,
+     col = cur.userData.col
+    if (selectedSquare === null) {
+     const piece = boardState[row][col]
+     if (piece && piece.color === playerColor) {
+      selectedSquare = { row, col }
+      playUiSound(750, 'sine', 0.05)
+     }
+    } else {
+     const fromAlg = alg(selectedSquare.row, selectedSquare.col),
+      toAlg = alg(row, col)
+     const target = boardState[row][col]
+     const moving = boardState[selectedSquare.row][selectedSquare.col]
+
+     if (target && target.color !== playerColor) {
+      triggerCombatWithVideo(
+       moving,
+       target,
+       selectedSquare.row,
+       selectedSquare.col,
+       row,
+       col,
+      )
+      selectedSquare = null
+     } else {
+      const mv = tryApplyChessMove(fromAlg, toAlg, 'q', true)
+      selectedSquare = null
+      if (mv && gameMode === 'local' && currentTurn !== playerColor) {
+       setTimeout(botPlayChessJs, 700)
+      }
+     }
+    }
+   }
+
+   function botPlayChessJs() {
+    if (gameState !== 'CHESS' || chess.turn() === playerColor) return
+    const moves = chess.moves({ verbose: true })
+    if (moves.length === 0) return
+    const chosen = moves[Math.floor(Math.random() * moves.length)]
+    const fromRC = rcFromAlg(chosen.from),
+     toRC = rcFromAlg(chosen.to)
+    const attacker = boardState[fromRC.row][fromRC.col],
+     defender = boardState[toRC.row][toRC.col]
+    if (chosen.flags.includes('c')) {
+     triggerCombatWithVideo(
+      attacker,
+      defender,
+      fromRC.row,
+      fromRC.col,
+      toRC.row,
+      toRC.col,
+     )
+    } else {
+     chess.move(chosen)
+     renderFromChess()
+     currentTurn = chess.turn()
+     updateTurnBanner()
+     checkGameOverByChess()
+    }
+   }
+
+   // =========================================================
+   // 10. COMBATE POR PIEZAS & SHOOTER
+   // =========================================================
+   const CLASS_CFG = {
+    q: {
+     name: 'Dama Suprema',
+     weapon: 'minigun',
+     dmg: 38,
+     fireMs: 50,
+     hp: 280,
+     speed: 23,
+     spread: 0.05,
+     desc: 'La más poderosa: HP titánico y Minigun destructiva',
+    },
+    k: {
+     name: 'Rey Soberano',
+     weapon: 'espadon',
+     dmg: 85,
+     fireMs: 400,
+     hp: 220,
+     speed: 16,
+     meleeRange: 7.0,
+     desc: 'Cuerpo a cuerpo aplastante y escudo protector',
+    },
+    r: {
+     name: 'Torre Bazooka',
+     weapon: 'bazooka',
+     dmg: 140,
+     fireMs: 1400,
+     hp: 170,
+     speed: 15,
+     splashRadius: 18,
+     desc: 'Bazooka de impacto masivo con onda expansiva',
+    },
+    b: {
+     name: 'Alfil Místico',
+     weapon: 'grenade',
+     dmg: 65,
+     fireMs: 800,
+     hp: 130,
+     speed: 19,
+     desc: 'Proyectiles de plasma explosivos',
+    },
+    n: {
+     name: 'Caballo Veloz',
+     weapon: 'bow',
+     dmg: 42,
+     fireMs: 550,
+     hp: 110,
+     speed: 21,
+     desc: 'Flechas rápidas con salto mejorado',
+    },
+    p: {
+     name: 'Peón Recluta',
+     weapon: 'musket',
+     dmg: 24,
+     fireMs: 950,
+     hp: 80,
+     speed: 17,
+     desc: 'El menos fuerte: Mosquete de cerrojo básico',
+    },
+   }
+
+   let isFiringContinuous = false
+   let lastPlayerShotTime = 0
+
+   function triggerCombatWithVideo(attacker, defender, fromR, fromC, toR, toC) {
+    playCinematic(CINEMATIC_VIDEOS.captureTransition, () => {
+     startCombat(attacker, defender, fromR, fromC, toR, toC)
+    })
+   }
+   function triggerCombatSync(data) {
+    playCinematic(CINEMATIC_VIDEOS.captureTransition, () => {
+     startCombat(
+      boardState[data.fromR][data.fromC],
+      boardState[data.toR][data.toC],
+      data.fromR,
+      data.fromC,
+      data.toR,
+      data.toC,
+     )
+    })
+   }
+
+   // =========================================================
+   // IA MILITAR GUERRILLA & INICIALIZACIÓN DE COMBATE
+   // =========================================================
+   let botTactics = {
+    state: 'AMBUSH',
+    timer: 0,
+    peekTimer: 0,
+    coverTarget: null,
+    strafeDir: 1,
+   }
+
+   function startCombat(attacker, defender, fromR, fromC, toR, toC) {
+    gameState = 'COMBAT'
+    combatPendingCapture = { attacker, defender, fromR, fromC, toR, toC }
+
+    const myPiece =
+     attacker.color === playerColor ? attacker.type : defender.type
+    const enemyPiece =
+     attacker.color === playerColor ? defender.type : attacker.type
+
+    currentCombatConfig = CLASS_CFG[myPiece] || CLASS_CFG.p
+    const enemyConfig = CLASS_CFG[enemyPiece] || CLASS_CFG.p
+
+    playerStats.maxHp = currentCombatConfig.hp
+    playerStats.hp = currentCombatConfig.hp
+    if (ownedItems.perks.includes('armor')) {
+     playerStats.maxHp += 40
+     playerStats.hp += 40
+    }
+    playerStats.speed = ownedItems.perks.includes('speed')
+     ? currentCombatConfig.speed * 1.35
+     : currentCombatConfig.speed
+    if (hasPremium) {
+     playerStats.speed *= 1.2
+     currentCombatConfig.dmg = Math.round(currentCombatConfig.dmg * 1.15)
+    }
+
+    enemyStats.maxHp = enemyConfig.hp
+    enemyStats.hp = enemyConfig.hp
+    enemyStats.speed =
+     enemyConfig.speed *
+     (botDifficulty === 'hard' ? 1.05 : botDifficulty === 'normal' ? 0.9 : 0.75)
+    enemyStats.fireCooldown = 0
+    enemyStats.config = enemyConfig
+
+    botTactics.state = 'AMBUSH'
+    botTactics.timer = 1.0
+    botTactics.coverTarget = null
+
+    updateHPBars()
+    syncGiantPiecesToArena()
+
+    while (enemyCombatHolder.children.length > 0)
+     enemyCombatHolder.remove(enemyCombatHolder.children[0])
+    const em = buildPieceMesh(defender.type, defender.color)
+    em.scale.set(6.8, 6.8, 6.8)
+    enemyCombatHolder.add(em)
+
+    if (ownedItems.perks.includes('tracker')) {
+     trackerArrow.visible = true
+     enemyCombatHolder.add(trackerArrow)
+    } else {
+     trackerArrow.visible = false
+    }
+
+    playerObj.position.set(600, TABLE_Y + 4, 38)
+    enemyCombatHolder.position.set(600, TABLE_Y + 2, -38)
+    yaw = Math.PI
+    pitch = 0
+    velocity.set(0, 0, 0)
+
+    document.getElementById('fps-hud').style.display = 'block'
+    document.getElementById('weapon-name').innerText =
+     `${currentCombatConfig.name} — ${currentCombatConfig.weapon.toUpperCase()}`
+    document.getElementById('weapon-stats').innerText =
+     `DMG ${currentCombatConfig.dmg} | HP ${playerStats.hp}`
+    document.getElementById('enemy-hp-label').innerText =
+     `Rival: ${enemyConfig.name}`
+    document.getElementById('premium-banner').style.display = hasPremium
+     ? 'block'
+     : 'none'
+
+    try {
+     renderer.domElement.requestPointerLock()
+    } catch (e) {}
+   }
+
+   function finishCombat(playerWon) {
+    document.exitPointerLock && document.exitPointerLock()
+    document.getElementById('fps-hud').style.display = 'none'
+
+    playCinematic(CINEMATIC_VIDEOS.combatVictory, () => {
+     gameState = 'CHESS'
+     const { attacker, defender, fromR, fromC, toR, toC } = combatPendingCapture
+     if (playerWon) {
+      boardGroup.remove(defender.mesh)
+      tryApplyChessMove(alg(fromR, fromC), alg(toR, toC), 'q', true)
+      addCoins(50)
+      addEXP(25)
+     } else {
+      boardGroup.remove(attacker.mesh)
+      try {
+       chess.remove(alg(fromR, fromC))
+      } catch (e) {}
+      renderFromChess()
+     }
+     combatPendingCapture = null
+     currentTurn = chess.turn()
+     updateTurnBanner()
+     if (gameMode === 'local' && currentTurn !== playerColor)
+      setTimeout(botPlayChessJs, 700)
+    })
+   }
+
+   function updateHPBars() {
+    document.getElementById('player-hp').style.width =
+     Math.max(0, (playerStats.hp / playerStats.maxHp) * 100) + '%'
+    document.getElementById('enemy-hp').style.width =
+     Math.max(0, enemyStats.hp) + '%'
+   }
+
+   function createTracer(origin, dir, color, length, endpoint) {
+    const end = endpoint || origin.clone().addScaledVector(dir, length)
+    const geometry = new THREE.BufferGeometry().setFromPoints([origin, end])
+    const material = new THREE.LineBasicMaterial({
+     color,
+     transparent: true,
+     opacity: 0.9,
+    })
+    const tracer = new THREE.Line(geometry, material)
+    scene.add(tracer)
+    setTimeout(() => {
+     scene.remove(tracer)
+     geometry.dispose()
+     material.dispose()
+    }, 90)
+   }
+
+   function spawnSparks(position) {
+    const geometry = new THREE.SphereGeometry(0.25, 6, 6)
+    const material = new THREE.MeshBasicMaterial({ color: 0xffc857 })
+    const sparks = new THREE.Mesh(geometry, material)
+    sparks.position.copy(position)
+    scene.add(sparks)
+    setTimeout(() => {
+     scene.remove(sparks)
+     geometry.dispose()
+     material.dispose()
+    }, 180)
+   }
+
+   function spawnGrenadeExplosion(position, damage) {
+    const radius = Math.max(2, Math.min(8, damage / 18))
+    const geometry = new THREE.SphereGeometry(radius, 16, 12)
+    const material = new THREE.MeshBasicMaterial({
+     color: 0xff6b35,
+     transparent: true,
+     opacity: 0.55,
+     depthWrite: false,
+    })
+    const explosion = new THREE.Mesh(geometry, material)
+    explosion.position.copy(position)
+    scene.add(explosion)
+    setTimeout(() => {
+     scene.remove(explosion)
+     geometry.dispose()
+     material.dispose()
+    }, 350)
+   }
+
+   function shootPlayerWeapon() {
+    if (gameState !== 'COMBAT' || !currentCombatConfig) return
+    const now = performance.now()
+    const delay = currentCombatConfig.fireMs || 300
+    if (now - lastPlayerShotTime < delay) return
+    lastPlayerShotTime = now
+
+    const weapon = currentCombatConfig.weapon
+    const dmg = currentCombatConfig.dmg
+    playWeaponSound(currentCombatConfig.weapon)
+    const dir = new THREE.Vector3()
+    fpsCamera.getWorldDirection(dir)
+
+    let spread = isAiming ? 0.01 : currentCombatConfig.spread || 0.04
+    dir.x += (Math.random() - 0.5) * spread
+    dir.y += (Math.random() - 0.5) * (spread * 0.5)
+    dir.z += (Math.random() - 0.5) * spread
+    dir.normalize()
+
+    const origin = playerObj.position.clone().add(new THREE.Vector3(0, 1.2, 0))
+
+    if (weapon === 'bazooka') {
+     fireRocket(origin, dir, dmg, currentCombatConfig.splashRadius)
+    } else if (weapon === 'espadon') {
+     doMeleeAttack(origin, dir, dmg, currentCombatConfig.meleeRange || 6.5)
+    } else {
+     executeHitscan(origin, dir, dmg)
+    }
+   }
+
+   function fireRocket(origin, dir, dmg, radius) {
+    const rocketGeom = new THREE.CylinderGeometry(0.35, 0.35, 2.0, 8)
+    rocketGeom.rotateX(Math.PI / 2)
+    const rocketMat = new THREE.MeshBasicMaterial({ color: 0xff4757 })
+    const rocket = new THREE.Mesh(rocketGeom, rocketMat)
+    rocket.position.copy(origin)
+    rocket.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), dir)
+    scene.add(rocket)
+
+    let progress = 0
+    const speed = 75
+    const rocketInterval = setInterval(() => {
+     if (gameState !== 'COMBAT') {
+      clearInterval(rocketInterval)
+      scene.remove(rocket)
+      return
+     }
+     progress += 0.02
+     rocket.position.addScaledVector(dir, speed * 0.02)
+
+     const distToBot = rocket.position.distanceTo(enemyCombatHolder.position)
+     const hitObstacle = checkCollisionPlayer(rocket.position)
+
+     if (
+      distToBot < 4.0 ||
+      hitObstacle ||
+      rocket.position.y <= TABLE_Y + 1 ||
+      progress > 2.5
+     ) {
+      clearInterval(rocketInterval)
+      scene.remove(rocket)
+      triggerBigExplosion(rocket.position, dmg, radius)
+     }
+    }, 20)
+   }
+
+   function triggerBigExplosion(pos, maxDmg, radius) {
+    spawnGrenadeExplosion(pos, maxDmg)
+    playUiSound(80, 'sawtooth', 0.5)
+
+    const enemyCenter = enemyCombatHolder.position
+     .clone()
+     .add(new THREE.Vector3(0, 2.5, 0))
+    const dist = pos.distanceTo(enemyCenter)
+    if (dist < radius) {
+     const falloff = 1 - dist / radius
+     const actualDmg = Math.round(maxDmg * falloff)
+     enemyStats.hp = Math.max(0, enemyStats.hp - actualDmg)
+     updateHPBars()
+     if (enemyStats.hp <= 0) finishCombat(true)
+    }
+
+    const distToPlayer = pos.distanceTo(playerObj.position)
+    if (distToPlayer < radius * 0.5) {
+     playerStats.hp = Math.max(0, playerStats.hp - Math.round(maxDmg * 0.35))
+     updateHPBars()
+     if (playerStats.hp <= 0) finishCombat(false)
+    }
+   }
+
+   function doMeleeAttack(origin, dir, dmg, range) {
+    const ray = new THREE.Raycaster(origin, dir, 0, range)
+    const hits = ray.intersectObjects(enemyCombatHolder.children, true)
+    createTracer(origin, dir, 0xf1c40f, 30)
+    if (hits.length > 0) {
+     enemyStats.hp -= dmg
+     updateHPBars()
+     playUiSound(880, 'triangle', 0.1)
+     spawnSparks(hits[0].point)
+     if (enemyStats.hp <= 0) finishCombat(true)
+    }
+   }
+
+   function executeHitscan(origin, dir, dmg) {
+    const maxDist = 200
+    const ray = new THREE.Raycaster(origin, dir, 0.5, maxDist)
+    const obstaclesMesh = arenaPiecesHolder.children.filter(
+     (m) => m.userData.isGiant,
+    )
+    const wallHits = ray.intersectObjects(obstaclesMesh, true)
+    const enemyHits = ray.intersectObjects(enemyCombatHolder.children, true)
+
+    const wallDist = wallHits.length > 0 ? wallHits[0].distance : Infinity
+    const enemyDist = enemyHits.length > 0 ? enemyHits[0].distance : Infinity
+    const tracerColor =
+     currentCombatConfig.weapon === 'minigun' ? 0xffa502 : 0x66fcf1
+
+    if (enemyDist < wallDist && enemyDist < maxDist) {
+     createTracer(origin, dir, tracerColor, 45, enemyHits[0].point)
+     enemyStats.hp -= dmg
+     updateHPBars()
+     playUiSound(950, 'square', 0.04)
+     if (enemyStats.hp <= 0) finishCombat(true)
+    } else if (wallDist < maxDist) {
+     createTracer(origin, dir, tracerColor, 45, wallHits[0].point)
+     spawnSparks(wallHits[0].point)
+    } else {
+     createTracer(origin, dir, tracerColor, 45)
+    }
+   }
+
+   function setupEvents() {
+    window.addEventListener('resize', () => {
+     chessCamera.aspect = window.innerWidth / window.innerHeight
+     chessCamera.updateProjectionMatrix()
+     fpsCamera.aspect = window.innerWidth / window.innerHeight
+     fpsCamera.updateProjectionMatrix()
+     renderer.setSize(window.innerWidth, window.innerHeight)
+    })
+    window.addEventListener('click', onChessClick)
+    window.addEventListener('mousemove', (e) => {
+     if (
+      gameState !== 'COMBAT' ||
+      document.pointerLockElement !== renderer.domElement
+     )
+      return
+     yaw -= e.movementX * 0.0024
+     pitch -= e.movementY * 0.0024
+     pitch = Math.max(-1.4, Math.min(1.4, pitch))
+    })
+    window.addEventListener('mousedown', (e) => {
+     if (gameState !== 'COMBAT') return
+     if (e.button === 0) {
+      isFiringContinuous = true
+      shootPlayerWeapon()
+     } else if (e.button === 2) {
+      isAiming = true
+     }
+    })
+    window.addEventListener('mouseup', (e) => {
+     if (gameState !== 'COMBAT') return
+     if (e.button === 0) {
+      isFiringContinuous = false
+     } else if (e.button === 2) {
+      isAiming = false
+     }
+    })
+    window.addEventListener('blur', () => {
+     isFiringContinuous = false
+     isAiming = false
+    })
+    document.addEventListener('pointerlockchange', () => {
+     if (document.pointerLockElement !== renderer.domElement) {
+      isFiringContinuous = false
+      isAiming = false
+     }
+    })
+    window.addEventListener('keydown', (e) => {
+     if (e.code === 'Escape') {
+      if (
+       document.getElementById('cinematic-container').style.display === 'block'
+      )
+       skipCinematic()
+      else if (gameState === 'COMBAT')
+       document.exitPointerLock && document.exitPointerLock()
+     }
+     if (gameState !== 'COMBAT') return
+     if (e.code === 'KeyW') moveForward = true
+     if (e.code === 'KeyS') moveBackward = true
+     if (e.code === 'KeyA') moveLeft = true
+     if (e.code === 'KeyD') moveRight = true
+     if (e.code === 'Space' && canJump) {
+      velocity.y = 14
+      canJump = false
+     }
+    })
+    window.addEventListener('keyup', (e) => {
+     if (e.code === 'KeyW') moveForward = false
+     if (e.code === 'KeyS') moveBackward = false
+     if (e.code === 'KeyA') moveLeft = false
+     if (e.code === 'KeyD') moveRight = false
+    })
+   }
+
+   let prevTime = performance.now()
+   function animate() {
+    requestAnimationFrame(animate)
+    const time = performance.now()
+    const delta = Math.min((time - prevTime) / 1000, 0.1)
+    prevTime = time
+
+    if (gameState === 'COMBAT') {
+     updateCombat(delta)
+     renderer.render(scene, fpsCamera)
+    } else {
+     renderer.render(scene, chessCamera)
+    }
+   }
+
+   function updateCombat(delta) {
+    const targetFOV = isAiming ? 35 : 70
+    fpsCamera.fov = THREE.MathUtils.lerp(fpsCamera.fov, targetFOV, delta * 12)
+    fpsCamera.updateProjectionMatrix()
+
+    if (isFiringContinuous) {
+     shootPlayerWeapon()
+    }
+
+    const mv = new THREE.Vector3()
+    if (moveForward) mv.z -= 1
+    if (moveBackward) mv.z += 1
+    if (moveLeft) mv.x -= 1
+    if (moveRight) mv.x += 1
+    if (mv.length() > 0) mv.normalize()
+    mv.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw)
+
+    const nextPos = playerObj.position
+     .clone()
+     .addScaledVector(mv, playerStats.speed * delta)
+    if (!checkCollisionPlayer(nextPos)) playerObj.position.copy(nextPos)
+
+    velocity.y -= 32 * delta
+    playerObj.position.y += velocity.y * delta
+    if (playerObj.position.y <= TABLE_Y + 4) {
+     playerObj.position.y = TABLE_Y + 4
+     velocity.y = 0
+     canJump = true
+    }
+
+    fpsCamera.position.copy(playerObj.position)
+    fpsCamera.rotation.set(0, 0, 0)
+    fpsCamera.rotation.y = yaw
+    fpsCamera.rotation.x = pitch
+
+    const enemyPos = enemyCombatHolder.position
+    const playerCenter = playerObj.position
+     .clone()
+     .add(new THREE.Vector3(0, 2.0, 0))
+    const botCenter = enemyPos.clone().add(new THREE.Vector3(0, 2.5, 0))
+
+    const toPlayer = new THREE.Vector3().subVectors(playerCenter, botCenter)
+    const distToPlayer = toPlayer.length()
+    const flatDir = new THREE.Vector3(toPlayer.x, 0, toPlayer.z).normalize()
+
+    const strafeSpeed = enemyStats.speed || 12
+    botTactics.timer -= delta
+    if (botTactics.timer <= 0) {
+     botTactics.timer = 1.0 + Math.random() * 1.5
+     botTactics.strafeDir = Math.random() < 0.5 ? 1 : -1
+    }
+
+    const sideStep = new THREE.Vector3(
+     -flatDir.z * botTactics.strafeDir,
+     0,
+     flatDir.x * botTactics.strafeDir,
+    )
+    const botDesiredMove = sideStep.clone().multiplyScalar(0.7)
+
+    if (distToPlayer > 26) botDesiredMove.addScaledVector(flatDir, 0.6)
+    else if (distToPlayer < 10) botDesiredMove.addScaledVector(flatDir, -0.6)
+    botDesiredMove.normalize()
+
+    const botNextPos = enemyPos
+     .clone()
+     .addScaledVector(botDesiredMove, strafeSpeed * delta)
+    botNextPos.x = Math.max(540, Math.min(660, botNextPos.x))
+    botNextPos.z = Math.max(-60, Math.min(60, botNextPos.z))
+
+    if (!checkCollisionPlayer(botNextPos)) {
+     enemyPos.copy(botNextPos)
+    } else {
+     botTactics.strafeDir *= -1
+    }
+
+    enemyCombatHolder.rotation.y = Math.atan2(flatDir.x, flatDir.z)
+
+    enemyStats.fireCooldown += delta
+    const botDelay = (enemyStats.config?.fireMs || 700) / 1000
+
+    if (enemyStats.fireCooldown >= Math.max(0.2, botDelay)) {
+     enemyStats.fireCooldown = 0
+
+     const shootOrigin = botCenter
+      .clone()
+      .add(flatDir.clone().multiplyScalar(1.5))
+     const shootDir = new THREE.Vector3()
+      .subVectors(playerCenter, shootOrigin)
+      .normalize()
+     const spread = 0.06
+     shootDir.x += (Math.random() - 0.5) * spread
+     shootDir.y += (Math.random() - 0.5) * spread
+     shootDir.z += (Math.random() - 0.5) * spread
+     shootDir.normalize()
+
+     const obstaclesMesh = arenaPiecesHolder.children.filter(
+      (m) => m.userData.isGiant,
+     )
+     const rayObstacle = new THREE.Raycaster(
+      shootOrigin,
+      shootDir,
+      0.5,
+      distToPlayer,
+     )
+     const blockers = rayObstacle.intersectObjects(obstaclesMesh, true)
+
+     createTracer(shootOrigin, shootDir, 0xff0055, 60)
+     playWeaponSound(enemyStats.config?.weapon || 'musket')
+
+     if (blockers.length === 0) {
+      const botDamage = enemyStats.config?.dmg || 25
+      playerStats.hp = Math.max(0, playerStats.hp - botDamage)
+      updateHPBars()
+      playUiSound(150, 'sawtooth', 0.12)
+      if (playerStats.hp <= 0) finishCombat(false)
+     } else {
+      spawnSparks(blockers[0].point)
+     }
+    }
+   }
+
+   window.onload = init
+  </script>
+ </body>
+</html>
